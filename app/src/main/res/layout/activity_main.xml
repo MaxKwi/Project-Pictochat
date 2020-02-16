@@ -11,6 +11,7 @@
         android:id="@+id/button_choose_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:text="Choose file" />
 
     <EditText
@@ -18,6 +19,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
         android:layout_toEndOf="@+id/button_choose_image"
         android:hint="Enter file name" />
 
@@ -42,7 +44,8 @@
         android:id="@+id/button_upload"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_above="@id/bottom_navigation"
+        android:layout_marginBottom="16dp"
         android:layout_centerHorizontal="true"
         android:text="Upload" />
 

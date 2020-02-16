@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         mImageView = findViewById(R.id.image_view);
         mProgressBar = findViewById(R.id.progress_bar);
 
-        mStorageRef = FirebaseStorage.getInstance().getReference("uploads"); //string is the location in the string
+        mStorageRef = FirebaseStorage.getInstance().getReference("uploads"); //String is the location in the string
         mDatabaseRef = FirebaseDatabase.getInstance().getReference("uploads");
 
         mButtonChooseImage.setOnClickListener(new View.OnClickListener() {
@@ -135,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    //Opens gallery to pick image
     private void openFileChooser(){
         Intent intent = new Intent();
         intent.setType("image/*");
@@ -160,6 +161,7 @@ public class MainActivity extends AppCompatActivity {
         return mime.getExtensionFromMimeType((cR.getType(uri)));
     }
 
+    //Uploads image chosen and shows upload progress in progress bar
     private void uploadFile(){
 
         if (mImageUri != null){
@@ -175,9 +177,9 @@ public class MainActivity extends AppCompatActivity {
                                 public void run() {
                                     mProgressBar.setProgress(0);
                                 }
-                            }, 5000);
+                            }, 2000);
 
-                            Toast.makeText(MainActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
+                            Toast.makeText(MainActivity.this, "Upload successful", Toast.LENGTH_SHORT).show();
 
 //                            Upload upload =  new Upload(mEditTextFileName.getText().toString().trim(), taskSnapshot.getUploadSessionUri().toString());
 //                            String uploadId = mDatabaseRef.push().getKey();
