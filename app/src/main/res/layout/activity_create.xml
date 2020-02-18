@@ -16,4 +16,10 @@
         app:menu="@menu/bottom_navigation"
         android:layout_alignParentBottom="true" />
 
+    <TextView
+        android:id="@+id/CreateLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="CreateActivity" />
+
 </RelativeLayout>
