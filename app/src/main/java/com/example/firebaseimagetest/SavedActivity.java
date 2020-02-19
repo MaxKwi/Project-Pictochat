@@ -55,7 +55,7 @@ public class SavedActivity extends AppCompatActivity {
                         return true;
                     case R.id.nav_feed:
                         startActivity(new Intent(getApplicationContext()
-                                , FeedActivity.class));
+                                , ImagesActivity.class));
                         overridePendingTransition(0,0);
                         return true;
                     case R.id.nav_saved:
