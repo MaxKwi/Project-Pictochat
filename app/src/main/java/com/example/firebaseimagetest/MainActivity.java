@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Button mButtonChooseImage;
     private Button mButtonUpload;
-    private TextView mTextViewShowUploads;
+    //private TextView mTextViewShowUploads;
     private EditText mEditTextFileName;
     private ImageView mImageView;
     private ProgressBar mProgressBar;
@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
 
         mButtonChooseImage = findViewById(R.id.button_choose_image);
         mButtonUpload = findViewById(R.id.button_upload);
-        mTextViewShowUploads = findViewById(R.id.text_view_show_uploads);
+        //mTextViewShowUploads = findViewById(R.id.text_view_show_uploads);
         mEditTextFileName = findViewById(R.id.edit_text_file_name);
         mImageView = findViewById(R.id.image_view);
         mProgressBar = findViewById(R.id.progress_bar);
@@ -97,12 +97,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        mTextViewShowUploads.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openImagesActivity();
-            }
-        });
+//        mTextViewShowUploads.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                openImagesActivity();
+//            }
+//        });
 
         //NavigationView Listener
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
                         return true;
                     case R.id.nav_feed:
                         startActivity(new Intent(getApplicationContext()
-                                , FeedActivity.class));
+                                , ImagesActivity.class));
                         overridePendingTransition(0,0);
                         return true;
                     case R.id.nav_saved:
