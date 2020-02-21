@@ -19,17 +19,26 @@
         android:textSize="36sp"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/googleIcon"
-        android:layout_width="207dp"
-        android:layout_height="52dp"
+
+    <com.google.android.gms.common.SignInButton
+        android:id="@+id/sign_in_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="300dp"
-        android:text="DoodleChat"
-        android:textAlignment="center"
-        android:textSize="36sp"
-        android:layout_alignTop="@id/textView"
-        app:srcCompat="@drawable/googlewebsignin" />
+        android:layout_alignTop="@id/textView" />
+
+<!--    <ImageView-->
+<!--        android:id="@+id/googleIcon"-->
+<!--        android:layout_width="207dp"-->
+<!--        android:layout_height="52dp"-->
+<!--        android:layout_centerHorizontal="true"-->
+<!--        android:layout_marginTop="300dp"-->
+<!--        android:text="DoodleChat"-->
+<!--        android:textAlignment="center"-->
+<!--        android:textSize="36sp"-->
+<!--        android:layout_alignTop="@id/textView"-->
+<!--        app:srcCompat="@drawable/googlewebsignin" />-->
 
 
 </RelativeLayout>
