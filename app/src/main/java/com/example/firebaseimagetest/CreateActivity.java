@@ -20,7 +20,9 @@ import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.webkit.MimeTypeMap;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -49,6 +51,8 @@ public class CreateActivity extends AppCompatActivity {
     int mDefaultColor;
     int newColor;
 
+    private ImageView sendButton;
+
     private static final int PICK_IMAGE_REQUEST = 1;
     //private static final String TAG = "MainActivity";
 
@@ -73,6 +77,15 @@ public class CreateActivity extends AppCompatActivity {
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_draw);
+
+        sendButton = (ImageView) findViewById(R.id.sendButton);
+
+        sendButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                UploadImage();
+            }
+        });
 
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -209,8 +222,13 @@ public class CreateActivity extends AppCompatActivity {
     {
         paintView.buildDrawingCache();
         Bitmap image = paintView.getmBitmap();
-        mImageUri = getImageUri(this, image);
-        uploadFile();
+        if(isStoragePermissionGranted())
+        {
+            mImageUri = getImageUri(this, image);
+            uploadFile();
+
+        }
+
     }
 
     private void SaveImage()
