@@ -7,6 +7,14 @@
     android:layout_height="match_parent"
     tools:context=".CreateActivity">
 
+    <ImageView
+        android:id="@+id/sendButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_above="@id/bottom_navigation"
+        android:layout_alignParentEnd="true"
+        app:srcCompat="@drawable/ic_send_black_24dp" />
+
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -19,6 +27,8 @@
 
     <com.example.firebaseimagetest.PaintView
         android:id="@+id/paintView"
+        android:layout_alignBottom="@id/sendButton"
+        android:layout_toLeftOf="@id/sendButton"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
