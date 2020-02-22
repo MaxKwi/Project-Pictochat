@@ -155,8 +155,10 @@ public class CreateActivity extends AppCompatActivity {
     private void uploadFile(){
 
         if (mImageUri != null){
+            //System.out.println("works");
             StorageReference fileReference = mStorageRef.child(System.currentTimeMillis() + "." + getFileExtension(mImageUri));
-
+            //System.out.println("past storage ref");
+            //System.out.println("past storage ref");
             mUploadTask = fileReference.putFile(mImageUri)
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
@@ -175,6 +177,7 @@ public class CreateActivity extends AppCompatActivity {
 //                            String uploadId = mDatabaseRef.push().getKey();
 //                            mDatabaseRef.child(uploadId).setValue(upload);
 
+                            //System.out.println("b4 task");
                             Task<Uri> urlTask = taskSnapshot.getStorage().getDownloadUrl();
                             while (!urlTask.isSuccessful());
                             Uri downloadUrl = urlTask.getResult();
@@ -182,7 +185,7 @@ public class CreateActivity extends AppCompatActivity {
                             //Log.d(TAG, "onSuccess: firebase download url: " + downloadUrl.toString()); //use if testing...don't need this line.
                             //Upload upload = new Upload(mEditTextFileName.getText().toString().trim(),downloadUrl.toString());
 
-                            Upload upload = new Upload("picture",downloadUrl.toString());
+                            Upload upload = new Upload("picture", downloadUrl.toString());
 
                             String uploadId = mDatabaseRef.push().getKey();
                             mDatabaseRef.child(uploadId).setValue(upload);
@@ -227,6 +230,10 @@ public class CreateActivity extends AppCompatActivity {
             mImageUri = getImageUri(this, image);
             uploadFile();
 
+        }
+        else
+        {
+            Toast.makeText(this, "Storage Permissions are not granted, please enable them in the settings.", Toast.LENGTH_SHORT).show();
         }
 
     }
