@@ -15,6 +15,22 @@
         android:layout_alignParentEnd="true"
         app:srcCompat="@drawable/ic_send_black_24dp" />
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentEnd="true"
+        android:layout_above="@id/savebutton"
+        android:visibility="invisible" />
+
+    <ImageView
+        android:id="@+id/drawMode"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+
+        android:layout_alignParentEnd="true"
+        app:srcCompat="@drawable/ic_create_black_24dp" />
+
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -31,5 +47,37 @@
         android:layout_toLeftOf="@id/sendButton"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
+    <ImageView
+        android:id="@+id/drawColor"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/drawMode"
+        app:srcCompat="@drawable/ic_border_color_black_24dp" />
+
+    <ImageView
+        android:id="@+id/eraser"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/drawColor"
+        app:srcCompat="@drawable/ic_bubble_chart_black_24dp" />
+
+    <ImageView
+        android:id="@+id/bgcolor"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/eraser"
+        app:srcCompat="@drawable/ic_format_color_fill_black_24dp" />
+
+    <ImageView
+        android:id="@+id/savebutton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentEnd="true"
+        android:layout_above="@id/sendButton"
+        app:srcCompat="@drawable/ic_save_black_24dp" />
 
 </RelativeLayout>

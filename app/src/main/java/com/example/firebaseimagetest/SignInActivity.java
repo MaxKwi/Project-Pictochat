@@ -55,6 +55,9 @@ public class SignInActivity extends AppCompatActivity {
         // [START initialize_auth]
         // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
+        FirebaseUser user = mAuth.getCurrentUser();
+
+        updateUI(user);
 
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -67,9 +70,13 @@ public class SignInActivity extends AppCompatActivity {
 
     private void updateUI(FirebaseUser user)
     {
-        Toast.makeText(this, "Signed in as: " + user.getDisplayName(), Toast.LENGTH_SHORT).show();
-        Intent nextActivity = new Intent(this, MainActivity.class);
-        startActivity(nextActivity);
+        if(user != null)
+        {
+            Toast.makeText(this, "Signed in as: " + user.getDisplayName(), Toast.LENGTH_SHORT).show();
+            Intent nextActivity = new Intent(this, MainActivity.class);
+            startActivity(nextActivity);
+        }
+
     }
 
     private void signIn() {

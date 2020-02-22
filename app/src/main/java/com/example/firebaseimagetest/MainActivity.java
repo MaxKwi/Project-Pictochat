@@ -73,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
         mProgressBar = findViewById(R.id.progress_bar);
 
         mStorageRef = FirebaseStorage.getInstance().getReference("uploads"); //String is the location in the string
+        //mStorageRef = FirebaseStorage.getInstance().getReferenceFromUrl("gs://fir-image-test-fb7e4.appspot.com/");
         mDatabaseRef = FirebaseDatabase.getInstance().getReference("uploads");
 
         mButtonChooseImage.setOnClickListener(new View.OnClickListener() {

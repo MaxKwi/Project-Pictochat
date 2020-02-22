@@ -12,17 +12,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.telecom.Call;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -51,7 +54,9 @@ public class CreateActivity extends AppCompatActivity {
     int mDefaultColor;
     int newColor;
 
-    private ImageView sendButton;
+    private ImageView sendButton, drawMode, drawColor, eraser, bgcolor, savebutton;
+
+    private ProgressBar progressBar;
 
     private static final int PICK_IMAGE_REQUEST = 1;
     //private static final String TAG = "MainActivity";
@@ -75,6 +80,9 @@ public class CreateActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create);
 
+
+        //progressBar.setVisibility(View.INVISIBLE);
+
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_draw);
 
@@ -84,6 +92,53 @@ public class CreateActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 UploadImage();
+            }
+        });
+
+        drawMode = (ImageView) findViewById(R.id.drawMode);
+
+        drawMode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+
+        drawColor = (ImageView) findViewById(R.id.drawColor);
+
+        drawColor.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                CallColorPicker();
+                paintView.changeColor(newColor);
+            }
+        });
+
+        eraser = (ImageView) findViewById(R.id.eraser);
+
+        eraser.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                paintView.changeEraser();
+            }
+        });
+
+        bgcolor = (ImageView) findViewById(R.id.bgcolor);
+
+        bgcolor.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                CallColorPicker();
+                paintView.changeBGColor(newColor);
+            }
+        });
+
+        savebutton = (ImageView) findViewById(R.id.savebutton);
+
+        savebutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SaveImage();
             }
         });
 
@@ -125,6 +180,9 @@ public class CreateActivity extends AppCompatActivity {
         mStorageRef = FirebaseStorage.getInstance().getReference("uploads"); //string is the location in the string
         mDatabaseRef = FirebaseDatabase.getInstance().getReference("uploads");
 
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.INVISIBLE);
+
     }
 
     private void openFileChooser(){
@@ -155,8 +213,10 @@ public class CreateActivity extends AppCompatActivity {
     private void uploadFile(){
 
         if (mImageUri != null){
+            //System.out.println("works");
             StorageReference fileReference = mStorageRef.child(System.currentTimeMillis() + "." + getFileExtension(mImageUri));
-
+            //System.out.println("past storage ref");
+            //System.out.println("past storage ref");
             mUploadTask = fileReference.putFile(mImageUri)
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
@@ -175,6 +235,7 @@ public class CreateActivity extends AppCompatActivity {
 //                            String uploadId = mDatabaseRef.push().getKey();
 //                            mDatabaseRef.child(uploadId).setValue(upload);
 
+                            //System.out.println("b4 task");
                             Task<Uri> urlTask = taskSnapshot.getStorage().getDownloadUrl();
                             while (!urlTask.isSuccessful());
                             Uri downloadUrl = urlTask.getResult();
@@ -182,10 +243,12 @@ public class CreateActivity extends AppCompatActivity {
                             //Log.d(TAG, "onSuccess: firebase download url: " + downloadUrl.toString()); //use if testing...don't need this line.
                             //Upload upload = new Upload(mEditTextFileName.getText().toString().trim(),downloadUrl.toString());
 
-                            Upload upload = new Upload("picture",downloadUrl.toString());
+                            Upload upload = new Upload("picture", downloadUrl.toString());
 
                             String uploadId = mDatabaseRef.push().getKey();
                             mDatabaseRef.child(uploadId).setValue(upload);
+
+                            progressBar.setVisibility(View.INVISIBLE);
 
                         }
                     })
@@ -193,6 +256,7 @@ public class CreateActivity extends AppCompatActivity {
                         @Override
                         public void onFailure(@NonNull Exception e) {
                             Toast.makeText(CreateActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                            progressBar.setVisibility(View.INVISIBLE);
                         }
                     })
                     .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
@@ -200,6 +264,7 @@ public class CreateActivity extends AppCompatActivity {
                         public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
                             double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
                             //mProgressBar.setProgress((int)progress);
+                            progressBar.setVisibility(View.VISIBLE);
                         }
                     });
         }
@@ -220,14 +285,22 @@ public class CreateActivity extends AppCompatActivity {
 
     private void UploadImage()
     {
-        paintView.buildDrawingCache();
-        Bitmap image = paintView.getmBitmap();
-        if(isStoragePermissionGranted())
+        if(mUploadTask == null || !mUploadTask.isInProgress())
         {
-            mImageUri = getImageUri(this, image);
-            uploadFile();
+            paintView.buildDrawingCache();
+            Bitmap image = paintView.getmBitmap();
+            if(isStoragePermissionGranted())
+            {
+                mImageUri = getImageUri(this, image);
+                uploadFile();
 
+            }
+            else
+            {
+                Toast.makeText(this, "Storage Permissions are not granted, please enable them in the settings.", Toast.LENGTH_SHORT).show();
+            }
         }
+
 
     }
 
