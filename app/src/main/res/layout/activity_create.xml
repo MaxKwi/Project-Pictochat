@@ -80,4 +80,12 @@
         android:layout_above="@id/sendButton"
         app:srcCompat="@drawable/ic_save_black_24dp" />
 
+    <ImageView
+        android:id="@+id/clear"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/bgcolor"
+        app:srcCompat="@drawable/ic_crop_original_black_24dp" />
+
 </RelativeLayout>

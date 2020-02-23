@@ -54,7 +54,7 @@ public class CreateActivity extends AppCompatActivity {
     int mDefaultColor;
     int newColor;
 
-    private ImageView sendButton, drawMode, drawColor, eraser, bgcolor, savebutton;
+    private ImageView sendButton, drawMode, drawColor, eraser, bgcolor, savebutton, clear;
 
     private ProgressBar progressBar;
 
@@ -74,6 +74,9 @@ public class CreateActivity extends AppCompatActivity {
     private DatabaseReference mDatabaseRef;
 
     private StorageTask mUploadTask;
+
+    private int drawModeInt = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,6 +103,24 @@ public class CreateActivity extends AppCompatActivity {
         drawMode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                drawModeInt++;
+
+                if(drawModeInt % 3 == 0)
+                {
+                    paintView.blur();
+
+                    Toast.makeText(CreateActivity.this, "Draw Mode: Blur", Toast.LENGTH_SHORT).show();
+                }
+                else if(drawModeInt % 2 == 0)
+                {
+                    paintView.emboss();
+                    Toast.makeText(CreateActivity.this, "Draw Mode: Emboss", Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    paintView.normal();
+                    Toast.makeText(CreateActivity.this, "Draw Mode: Normal", Toast.LENGTH_SHORT).show();
+                }
 
             }
         });
@@ -130,6 +151,15 @@ public class CreateActivity extends AppCompatActivity {
             public void onClick(View view) {
                 CallColorPicker();
                 paintView.changeBGColor(newColor);
+            }
+        });
+
+        clear = (ImageView) findViewById(R.id.clear);
+
+        clear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                paintView.clear();
             }
         });
 
