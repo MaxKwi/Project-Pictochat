@@ -10,7 +10,7 @@
     <EditText
         android:id="@+id/edit_text_file_name"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="72dp"
         android:layout_toEndOf="@+id/profile"
         android:hint="Search " />
 
@@ -26,8 +26,8 @@
 
     <ImageView
         android:id="@+id/profile"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         app:srcCompat="@drawable/ic_person_black_24dp" />

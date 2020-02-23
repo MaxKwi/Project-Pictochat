@@ -133,12 +133,18 @@ public class MainActivity extends AppCompatActivity {
         //profileIcon.setImageURI(null);
         //profileIcon.setImageURI(user.getPhotoUrl());
 
+        Picasso.with(MainActivity.this)
+                .load(user.getPhotoUrl())
+                .into(profileIcon);
+
         //new DownloadImageTask(profileIcon).execute(user.getPhotoUrl());
 
         profileIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //view profile
+                Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+                startActivity(intent);
             }
         });
 
@@ -146,12 +152,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCreateContextMenu(ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
                 contextMenu.setHeaderTitle("Select Action");
-                MenuItem viewProfile = contextMenu.add(Menu.NONE, 1, 1, "View Profile");
+                MenuItem viewProfile = contextMenu.add(Menu.NONE, 1, 1, "View Profile Activity");
                 MenuItem signOut = contextMenu.add(Menu.NONE, 2, 2, "Sign Out");
 
                 viewProfile.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem menuItem) {
+                        Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+                        startActivity(intent);
                         return false;
                     }
                 });
