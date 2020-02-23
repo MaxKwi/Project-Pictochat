@@ -273,7 +273,7 @@ public class CreateActivity extends AppCompatActivity {
                             //Log.d(TAG, "onSuccess: firebase download url: " + downloadUrl.toString()); //use if testing...don't need this line.
                             //Upload upload = new Upload(mEditTextFileName.getText().toString().trim(),downloadUrl.toString());
 
-                            Upload upload = new Upload("picture", downloadUrl.toString());
+                            Upload upload = new Upload("Doodle", downloadUrl.toString());
 
                             String uploadId = mDatabaseRef.push().getKey();
                             mDatabaseRef.child(uploadId).setValue(upload);
@@ -309,7 +309,7 @@ public class CreateActivity extends AppCompatActivity {
     public Uri getImageUri(Context inContext, Bitmap inImage) {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "picture", null);
+        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Doodle", null);
         return Uri.parse(path);
     }
 
@@ -339,7 +339,7 @@ public class CreateActivity extends AppCompatActivity {
         paintView.buildDrawingCache();
         Bitmap image = paintView.getmBitmap();
         if(isStoragePermissionGranted()) {
-            MediaStore.Images.Media.insertImage(getContentResolver(), image, "picture", "picture");  // Saves the image.
+            MediaStore.Images.Media.insertImage(getContentResolver(), image, "Doodle", "Doodle");  // Saves the image.
             Toast.makeText(this, "Saved to gallery.", Toast.LENGTH_SHORT).show();
         }
     }
