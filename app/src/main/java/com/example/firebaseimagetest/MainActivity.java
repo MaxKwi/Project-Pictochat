@@ -135,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
 
         Picasso.with(MainActivity.this)
                 .load(user.getPhotoUrl())
+                .transform(new CircleTransform())
                 .into(profileIcon);
 
         //new DownloadImageTask(profileIcon).execute(user.getPhotoUrl());

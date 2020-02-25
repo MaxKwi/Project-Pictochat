@@ -35,6 +35,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         Picasso.with(ProfileActivity.this)
                 .load(user.getPhotoUrl())
+                .transform(new CircleTransform())
                 .into(profileIcon);
 
         usernameEdit = (EditText) findViewById(R.id.usernameEdit);
