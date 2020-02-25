@@ -8,11 +8,14 @@
     tools:context=".MainActivity">
 
     <EditText
-        android:id="@+id/edit_text_file_name"
-        android:layout_width="match_parent"
-        android:layout_height="72dp"
+        android:id="@+id/editText"
+        android:layout_width="266dp"
+        android:layout_height="48dp"
         android:layout_toEndOf="@+id/profile"
-        android:hint="Search " />
+        android:layout_marginTop="10dp"
+        android:layout_toLeftOf="@id/profile"
+        android:layout_toRightOf="@+id/addFriend"
+        android:hint="Search" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:layout_width="wrap_content"
@@ -26,10 +29,26 @@
 
     <ImageView
         android:id="@+id/profile"
-        android:layout_width="72dp"
-        android:layout_height="72dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
-        app:srcCompat="@drawable/ic_person_black_24dp" />
+        app:srcCompat="@drawable/ic_person_black_24dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="10dp"/>
+
+    <ImageView
+        android:id="@+id/addFriend"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:src="@drawable/ic_person_add_black_24dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="15dp" />
+
+
 
 </RelativeLayout>
