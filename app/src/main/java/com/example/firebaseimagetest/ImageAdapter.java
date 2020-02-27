@@ -88,7 +88,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
 
         @Override
         public void onCreateContextMenu(ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
-            contextMenu.setHeaderTitle("Select Action");
+            //contextMenu.setHeaderTitle("Select Action");
             MenuItem doWhatever = contextMenu.add(Menu.NONE, 1, 1, "Do Whatever");
             MenuItem delete = contextMenu.add(Menu.NONE, 2, 2, "Delete");
 

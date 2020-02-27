@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -24,8 +25,11 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,6 +44,8 @@ public class SignInActivity extends AppCompatActivity {
     // [END declare_auth]
 
     private GoogleSignInClient mGoogleSignInClient;
+
+    private boolean childExists = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,11 +116,39 @@ public class SignInActivity extends AppCompatActivity {
 
     private void AddToDB()
     {
-        String userID = mAuth.getCurrentUser().getUid();
+        final String userID = mAuth.getCurrentUser().getUid();
+
+        DatabaseReference tempUserDb = FirebaseDatabase.getInstance().getReference("users");
+
+        tempUserDb.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.hasChild(userID))
+                {
+                    childExists = true;
+                    System.out.println("EXISTSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        if(!childExists)
+        {
+            InitializeChild(userID);
+            System.out.println("DOES NOT EXISTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
+        }
+
+    }
+
+    private void InitializeChild(String userID)
+    {
         DatabaseReference currentUserDb = FirebaseDatabase.getInstance().getReference().child("users").child(userID);
 
         FirebaseUser currentUser = mAuth.getCurrentUser();
-
         String email = currentUser.getEmail();
         String name = currentUser.getDisplayName();
 
@@ -122,9 +156,12 @@ public class SignInActivity extends AppCompatActivity {
         userInfo.put("email", email);
         userInfo.put("name", name);
         userInfo.put("username", name);
+        userInfo.put("userID", userID);
         userInfo.put("profileImageUrl", "default");
 
         currentUserDb.updateChildren(userInfo);
+
+        Toast.makeText(this, "New User Profile Created!", Toast.LENGTH_SHORT).show();
     }
 
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {

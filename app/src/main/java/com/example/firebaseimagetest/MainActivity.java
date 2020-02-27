@@ -70,8 +70,11 @@ public class MainActivity extends AppCompatActivity {
 
     private StorageReference mStorageRef;
     private DatabaseReference mDatabaseRef;
+    DatabaseReference currentUserDb;
 
     private StorageTask mUploadTask;
+
+    FirebaseUser tempUser;
 
     FirebaseAuth mAuth;
 
@@ -104,13 +107,38 @@ public class MainActivity extends AppCompatActivity {
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
-
-
-
-
         mAuth = FirebaseAuth.getInstance();
 
         FirebaseUser user = mAuth.getCurrentUser();
+        tempUser = mAuth.getCurrentUser();
+
+        currentUserDb = FirebaseDatabase.getInstance().getReference().child("users").child(user.getUid());
+
+        currentUserDb.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot)
+            {
+
+                if(!dataSnapshot.child("profileImageUrl").getValue().toString().equals("default"))
+                {
+                    Picasso.with(MainActivity.this).load(dataSnapshot.child("profileImageUrl").getValue().toString()).transform(new CircleTransform()).into(profileIcon);
+                }
+                else
+                {
+                    Picasso.with(MainActivity.this)
+                            .load(tempUser.getPhotoUrl())
+                            .transform(new CircleTransform())
+                            .into(profileIcon);
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
 
         profileIcon = (ImageView) findViewById(R.id.profile);
 
@@ -152,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
         profileIcon.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
             @Override
             public void onCreateContextMenu(ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
-                contextMenu.setHeaderTitle("Select Action");
+                //contextMenu.setHeaderTitle("Select Action");
                 MenuItem viewProfile = contextMenu.add(Menu.NONE, 1, 1, "View Profile Activity");
                 MenuItem signOut = contextMenu.add(Menu.NONE, 2, 2, "Sign Out");
 
