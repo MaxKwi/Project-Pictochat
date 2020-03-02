@@ -81,7 +81,7 @@ public class AddFriendsActivity extends AppCompatActivity {
         in.hideSoftInputFromWindow(searchBar.getWindowToken(), 0);
         //...perform search
         DatabaseReference usersDB = FirebaseDatabase.getInstance().getReference().child("users");
-        Query query = usersDB.orderByChild("username").startAt(searchBar.getText().toString()).endAt(searchBar.getText().toString() + "\uf8ff");
+        Query query = usersDB.orderByChild("username").startAt(searchBar.getText().toString().toUpperCase()).endAt(searchBar.getText().toString().toLowerCase() + "\uf8ff");
         query.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
