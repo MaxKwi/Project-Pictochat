@@ -29,6 +29,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
@@ -45,7 +46,7 @@ public class SignInActivity extends AppCompatActivity {
 
     private GoogleSignInClient mGoogleSignInClient;
 
-    private boolean childExists = false;
+    private boolean childExists = false, dbInitialized = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,16 +119,63 @@ public class SignInActivity extends AppCompatActivity {
     {
         final String userID = mAuth.getCurrentUser().getUid();
 
-        DatabaseReference tempUserDb = FirebaseDatabase.getInstance().getReference("users");
+        DatabaseReference tempUserDb = FirebaseDatabase.getInstance().getReference();
 
-        tempUserDb.addListenerForSingleValueEvent(new ValueEventListener() {
+//        tempUserDb.addListenerForSingleValueEvent(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                if(!dbInitialized)
+//                {
+//                    for(DataSnapshot ds : dataSnapshot.getChildren())
+//                    {
+//                        if(ds.getValue().equals(userID))
+//                        {
+//                            childExists = true;
+//                            System.out.println("EXISTSSSSSSSSSSSSSSSSS");
+//                        }
+//
+//                    }
+//
+//                    if(!childExists)
+//                    {
+//                        System.out.println("DOESNNTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
+//                        dbInitialized = true;
+//                        InitializeChild(userID);
+//                    }
+//                }
+//
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        });
+
+        Query query = tempUserDb.child("users").orderByChild("userID").equalTo(userID);
+        query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.hasChild(userID))
+                //System.out.println("CHECKING DATAAAAAAAAAAAAAAAAAAA");
+                if(!dbInitialized)
                 {
-                    childExists = true;
-                    System.out.println("EXISTSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
+                    for(DataSnapshot userSnapshot : dataSnapshot.getChildren())
+                    {
+                        //System.out.println("EXISTSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS: " + userSnapshot.getKey());
+                        childExists = true;
+                    }
+
+                    if(!childExists)
+                    {
+
+                        //System.out.println("DOESNNTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
+                        dbInitialized = true;
+                        InitializeChild(userID);
+
+                    }
+
                 }
+
             }
 
             @Override
@@ -136,11 +184,13 @@ public class SignInActivity extends AppCompatActivity {
             }
         });
 
-        if(!childExists)
-        {
-            InitializeChild(userID);
-            System.out.println("DOES NOT EXISTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
-        }
+//        if(!childExists)
+//        {
+//            System.out.println("DOESNNTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
+//            dbInitialized = true;
+//            InitializeChild(userID);
+//        }
+
 
     }
 
