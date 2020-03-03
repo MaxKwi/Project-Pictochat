@@ -5,16 +5,20 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.EditText;
@@ -60,11 +64,11 @@ public class MainActivity extends AppCompatActivity {
     //private Button mButtonChooseImage;
     //private Button mButtonUpload;
     //private TextView mTextViewShowUploads;
-    private EditText mEditTextFileName;
+    private EditText searchBar;
     //private ImageView mImageView;
     //private ProgressBar mProgressBar;
 
-    private ImageView profileIcon;
+    private ImageView profileIcon, addFriends;
 
     private Uri mImageUri;
 
@@ -84,6 +88,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        UserInformation userInformationListener = new UserInformation();
+        userInformationListener.startFetching();
+
 
         //Removing notification bar
 //        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -92,7 +99,8 @@ public class MainActivity extends AppCompatActivity {
         //mButtonChooseImage = findViewById(R.id.button_choose_image);
         //mButtonUpload = findViewById(R.id.button_upload);
         //mTextViewShowUploads = findViewById(R.id.text_view_show_uploads);
-        mEditTextFileName = findViewById(R.id.editText);
+        searchBar = findViewById(R.id.editText);
+        addFriends = findViewById(R.id.addFriend);
         //mImageView = findViewById(R.id.image_view);
         //mProgressBar = findViewById(R.id.progress_bar);
 
@@ -177,6 +185,27 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        addFriends.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, AddFriendsActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        searchBar.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    performSearch();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+
+
         profileIcon.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
             @Override
             public void onCreateContextMenu(ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
@@ -242,5 +271,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void performSearch() {
+        searchBar.clearFocus();
+        InputMethodManager in = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        in.hideSoftInputFromWindow(searchBar.getWindowToken(), 0);
+        //...perform search
+    }
 
 }
