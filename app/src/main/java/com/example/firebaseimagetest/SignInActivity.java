@@ -86,6 +86,7 @@ public class SignInActivity extends AppCompatActivity {
         {
             Toast.makeText(this, "Signed in as: " + user.getDisplayName(), Toast.LENGTH_SHORT).show();
             Intent nextActivity = new Intent(this, MainActivity.class);
+            nextActivity.putExtra("db_initialized", dbInitialized);
             startActivity(nextActivity);
         }
 
