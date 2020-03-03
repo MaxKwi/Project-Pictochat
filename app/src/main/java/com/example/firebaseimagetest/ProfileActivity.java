@@ -64,6 +64,8 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
+        final boolean dbInit = getIntent().getBooleanExtra("db_initialized", false);
+
         progressBar = (ProgressBar) findViewById(R.id.profileProgressBar);
         progressBar.setVisibility(View.INVISIBLE);
 
@@ -92,9 +94,19 @@ public class ProfileActivity extends AppCompatActivity {
                 usernameEdit.setText(dataSnapshot.child("username").getValue().toString());
                 userID = dataSnapshot.child("userID").getValue().toString();
 
-                if(!dataSnapshot.child("profileImageUrl").getValue().toString().equals("default"))
+                if(!dbInit)
                 {
-                    Picasso.with(ProfileActivity.this).load(dataSnapshot.child("profileImageUrl").getValue().toString()).transform(new CircleTransform()).into(profileIcon);
+                    if(!dataSnapshot.child("profileImageUrl").getValue().toString().equals("default"))
+                    {
+                        Picasso.with(ProfileActivity.this).load(dataSnapshot.child("profileImageUrl").getValue().toString()).transform(new CircleTransform()).into(profileIcon);
+                    }
+                    else
+                    {
+                        Picasso.with(ProfileActivity.this)
+                                .load(tempUser.getPhotoUrl())
+                                .transform(new CircleTransform())
+                                .into(profileIcon);
+                    }
                 }
                 else
                 {

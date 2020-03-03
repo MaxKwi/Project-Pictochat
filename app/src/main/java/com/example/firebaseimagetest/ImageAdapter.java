@@ -1,14 +1,12 @@
 package com.example.firebaseimagetest;
 
 import android.content.Context;
-import android.text.Layout;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -89,7 +87,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
         @Override
         public void onCreateContextMenu(ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
             //contextMenu.setHeaderTitle("Select Action");
-            MenuItem doWhatever = contextMenu.add(Menu.NONE, 1, 1, "Do Whatever");
+            MenuItem doWhatever = contextMenu.add(Menu.NONE, 1, 1, "Save");
             MenuItem delete = contextMenu.add(Menu.NONE, 2, 2, "Delete");
 
             doWhatever.setOnMenuItemClickListener(this);
@@ -107,7 +105,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
                     switch(menuItem.getItemId())
                     {
                         case 1:
-                            mListener.onWhatEverClick(position);
+                            mListener.onSaveClick(position);
                             return true;
                         case 2:
                             mListener.onDeleteClick(position);
@@ -124,7 +122,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
     {
         void onItemClick(int position);
 
-        void onWhatEverClick(int position);
+        void onSaveClick(int position);
 
         void onDeleteClick(int position);
 
