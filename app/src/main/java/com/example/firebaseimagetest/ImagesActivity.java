@@ -178,102 +178,11 @@ public class ImagesActivity extends AppCompatActivity implements ImageAdapter.On
 
 
 
-        imageRef.getBytes(1024 * 1024)
-                .addOnSuccessListener(new OnSuccessListener<byte[]>() {
-                    @Override
-                    public void onSuccess(byte[] bytes) {
-                        Bitmap bitmapImg = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                        mImageUri = getImageUri(ImagesActivity.this, bitmapImg);
-                        uploadFile();
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(ImagesActivity.this, "Could not save image", Toast.LENGTH_SHORT).show();
-            }
-        });
+
 
 
     }
 
-    public Uri getImageUri(Context inContext, Bitmap inImage) {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Doodle", null);
-        return Uri.parse(path);
-    }
-
-    private String getFileExtension(Uri uri){
-        ContentResolver cR = getContentResolver();
-        MimeTypeMap mime = MimeTypeMap.getSingleton();
-        return mime.getExtensionFromMimeType((cR.getType(uri)));
-    }
-
-    private void uploadFile(){
-
-        if (mImageUri != null){
-            //System.out.println("works");
-            StorageReference fileReference = FirebaseStorage.getInstance().getReference().child("saved").child(tempUser.getUid()).child(System.currentTimeMillis() + "." + getFileExtension(mImageUri));
-            //System.out.println("past storage ref");
-            //System.out.println("past storage ref");
-            mUploadTask = fileReference.putFile(mImageUri)
-                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            Handler handler = new Handler();
-                            handler.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    //mProgressBar.setProgress(0);
-                                }
-                            }, 5000);
-
-                            Toast.makeText(ImagesActivity.this, "Upload successful", Toast.LENGTH_LONG).show();
-
-//                            Upload upload =  new Upload(mEditTextFileName.getText().toString().trim(), taskSnapshot.getUploadSessionUri().toString());
-//                            String uploadId = mDatabaseRef.push().getKey();
-//                            mDatabaseRef.child(uploadId).setValue(upload);
-
-                            //System.out.println("b4 task");
-                            Task<Uri> urlTask = taskSnapshot.getStorage().getDownloadUrl();
-                            while (!urlTask.isSuccessful());
-                            Uri downloadUrl = urlTask.getResult();
-
-                            //Log.d(TAG, "onSuccess: firebase download url: " + downloadUrl.toString()); //use if testing...don't need this line.
-                            //Upload upload = new Upload(mEditTextFileName.getText().toString().trim(),downloadUrl.toString());
-
-                            Upload upload = new Upload("Doodle", downloadUrl.toString());
-
-                            String uploadId = mDatabaseRef.push().getKey();
-                            mDatabaseRef.child(uploadId).setValue(upload);
-
-                            //progressBar.setVisibility(View.INVISIBLE);
-
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(ImagesActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                            //progressBar.setVisibility(View.INVISIBLE);
-                        }
-                    })
-                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                            double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                            //mProgressBar.setProgress((int)progress);
-                            //progressBar.setVisibility(View.VISIBLE);
-                        }
-                    });
-        }
-
-
-
-        else{
-            Toast.makeText(this, "No file selected", Toast.LENGTH_SHORT).show();
-        }
-    }
 
 
     public  boolean isStoragePermissionGranted() {

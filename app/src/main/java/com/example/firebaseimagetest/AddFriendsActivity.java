@@ -86,11 +86,13 @@ public class AddFriendsActivity extends AppCompatActivity {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 String username = "";
+                String userID = "";
                 String uid = dataSnapshot.getRef().getKey();
                 if(dataSnapshot.child("username").getValue() != null){
                     username = dataSnapshot.child("username").getValue().toString();
+                    userID = dataSnapshot.child("userID").getValue().toString();
                 }
-                if(!username.equals(FirebaseAuth.getInstance().getCurrentUser().getDisplayName())){
+                if(!userID.equals(FirebaseAuth.getInstance().getCurrentUser().getUid())){
                     Users obj = new Users(username, uid);
                     results.add(obj);
                     mAdapter.notifyDataSetChanged();

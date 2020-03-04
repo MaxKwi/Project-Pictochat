@@ -84,9 +84,16 @@ public class SignInActivity extends AppCompatActivity {
     {
         if(user != null)
         {
-            Toast.makeText(this, "Signed in as: " + user.getDisplayName(), Toast.LENGTH_SHORT).show();
+            if(dbInitialized)
+            {
+                Toast.makeText(this, "New User: " + user.getDisplayName() + " Created", Toast.LENGTH_SHORT).show();
+            }
+            else
+            {
+                Toast.makeText(this, "Signed in as: " + user.getDisplayName(), Toast.LENGTH_SHORT).show();
+            }
             Intent nextActivity = new Intent(this, MainActivity.class);
-            nextActivity.putExtra("db_initialized", dbInitialized);
+            nextActivity.putExtra("initialized_db", dbInitialized);
             startActivity(nextActivity);
         }
 
@@ -122,37 +129,6 @@ public class SignInActivity extends AppCompatActivity {
 
         DatabaseReference tempUserDb = FirebaseDatabase.getInstance().getReference();
 
-//        tempUserDb.addListenerForSingleValueEvent(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                if(!dbInitialized)
-//                {
-//                    for(DataSnapshot ds : dataSnapshot.getChildren())
-//                    {
-//                        if(ds.getValue().equals(userID))
-//                        {
-//                            childExists = true;
-//                            System.out.println("EXISTSSSSSSSSSSSSSSSSS");
-//                        }
-//
-//                    }
-//
-//                    if(!childExists)
-//                    {
-//                        System.out.println("DOESNNTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
-//                        dbInitialized = true;
-//                        InitializeChild(userID);
-//                    }
-//                }
-//
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//            }
-//        });
-
         Query query = tempUserDb.child("users").orderByChild("userID").equalTo(userID);
         query.addValueEventListener(new ValueEventListener() {
             @Override
@@ -164,6 +140,12 @@ public class SignInActivity extends AppCompatActivity {
                     {
                         //System.out.println("EXISTSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS: " + userSnapshot.getKey());
                         childExists = true;
+
+                        if(childExists)
+                        {
+                            break;
+                        }
+
                     }
 
                     if(!childExists)
@@ -173,7 +155,12 @@ public class SignInActivity extends AppCompatActivity {
                         dbInitialized = true;
                         InitializeChild(userID);
 
+
                     }
+
+                    FirebaseUser user = mAuth.getCurrentUser();
+                    updateUI(user);
+
 
                 }
 
@@ -184,13 +171,6 @@ public class SignInActivity extends AppCompatActivity {
 
             }
         });
-
-//        if(!childExists)
-//        {
-//            System.out.println("DOESNNTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
-//            dbInitialized = true;
-//            InitializeChild(userID);
-//        }
 
 
     }
@@ -212,7 +192,7 @@ public class SignInActivity extends AppCompatActivity {
 
         currentUserDb.updateChildren(userInfo);
 
-        Toast.makeText(this, "New User Profile Created!", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "New User Profile Created!", Toast.LENGTH_SHORT).show();
     }
 
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
@@ -226,9 +206,9 @@ public class SignInActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithCredential:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
                             AddToDB();
-                            updateUI(user);
+                            //FirebaseUser user = mAuth.getCurrentUser();
+                            //updateUI(user);
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());

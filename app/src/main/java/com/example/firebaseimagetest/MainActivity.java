@@ -8,6 +8,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -93,7 +94,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         Intent intent = getIntent();
-        //boolean db_Initialized = intent.getBooleanExtra("initialized_db");
+        final boolean db_Initialized = intent.getBooleanExtra("initialized_db", false);
+        //System.out.println(db_Initialized);
 
 
         //Removing notification bar
@@ -131,11 +133,21 @@ public class MainActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot)
             {
 
-                if(!dataSnapshot.child("profileImageUrl").getValue().toString().equals("default"))
+                if(!db_Initialized)
                 {
-                    Picasso.with(MainActivity.this).load(dataSnapshot.child("profileImageUrl").getValue().toString()).transform(new CircleTransform()).into(profileIcon);
+                    if(!dataSnapshot.child("profileImageUrl").getValue().toString().equals("default"))
+                    {
+                        Picasso.with(MainActivity.this).load(dataSnapshot.child("profileImageUrl").getValue().toString()).transform(new CircleTransform()).into(profileIcon);
+                    }
+                    else
+                    {
+                        Picasso.with(MainActivity.this)
+                                .load(tempUser.getPhotoUrl())
+                                .transform(new CircleTransform())
+                                .into(profileIcon);
+                    }
                 }
-                else
+                else if(db_Initialized)
                 {
                     Picasso.with(MainActivity.this)
                             .load(tempUser.getPhotoUrl())
