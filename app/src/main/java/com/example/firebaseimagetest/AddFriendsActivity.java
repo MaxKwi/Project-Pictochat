@@ -18,7 +18,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.firebaseimagetest.RecyclerViewFollow.RCAdapter;
-import com.example.firebaseimagetest.RecyclerViewFollow.Users;
+import com.example.firebaseimagetest.RecyclerViewPending.RCAdapterPending;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -26,6 +26,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
@@ -36,6 +37,10 @@ public class AddFriendsActivity extends AppCompatActivity {
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
+
+    private RecyclerView pRecyclerView;
+    private RecyclerView.Adapter pAdapter;
+    private RecyclerView.LayoutManager pLayoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +54,14 @@ public class AddFriendsActivity extends AppCompatActivity {
         mRecyclerView.setLayoutManager(mLayoutManager);
         mAdapter = new RCAdapter(getDataset(), getApplication());
         mRecyclerView.setAdapter(mAdapter);
+
+        pRecyclerView = findViewById(R.id.recyclerView);
+        pRecyclerView.setNestedScrollingEnabled(false);
+        pRecyclerView.setHasFixedSize(false);
+        pLayoutManager = new LinearLayoutManager(getApplication());
+        pRecyclerView.setLayoutManager(pLayoutManager);
+        pAdapter = new RCAdapterPending(getDataset(), getApplication());
+        pRecyclerView.setAdapter(pAdapter);
 
         backButton = (ImageView) findViewById(R.id.back);
 
@@ -73,6 +86,72 @@ public class AddFriendsActivity extends AppCompatActivity {
                 return false;
             }
         });
+
+        showPending();
+
+    }
+
+    private void showPending()
+    {
+        DatabaseReference usersDB = FirebaseDatabase.getInstance().getReference().child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        Query query = usersDB.orderByChild("pending");
+        query.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s)
+            {
+                for(DataSnapshot ds : dataSnapshot.getChildren())
+                {
+                    getUserInfo(ds.getKey());
+                }
+                pAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void getUserInfo(String uid)
+    {
+        DatabaseReference usersDB = FirebaseDatabase.getInstance().getReference().child("users").child(uid);
+        usersDB.addValueEventListener(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String tempUid = dataSnapshot.getKey();
+                String tempUsername = dataSnapshot.child("username").getValue().toString();
+                Users obj = new Users(tempUsername, tempUid);
+                pendingFriends.add(obj);
+                //pAdapter.notifyItemInserted(pendingFriends.size() - 1);
+//                pAdapter.notifyDataSetChanged();
+                //mAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        //System.out.println("finished");
+
     }
 
     private void performSearch() {
@@ -127,6 +206,7 @@ public class AddFriendsActivity extends AppCompatActivity {
         mAdapter.notifyItemRangeRemoved(0, size);
     }
 
+    private ArrayList<Users> pendingFriends = new ArrayList<>();
     private ArrayList<Users> results = new ArrayList<>();
     private ArrayList<Users> getDataset(){
         return results;

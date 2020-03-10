@@ -52,6 +52,12 @@
         android:layout_marginRight="20dp"
         android:layout_marginTop="15dp" />
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_above="@id/bottom_navigation"
+        android:layout_below="@id/editText"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/recycler_view_main"/>
 
 
 </RelativeLayout>

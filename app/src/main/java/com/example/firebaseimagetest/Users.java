@@ -1,4 +1,4 @@
-package com.example.firebaseimagetest.RecyclerViewFollow;
+package com.example.firebaseimagetest;
 
 public class Users {
     private String username;

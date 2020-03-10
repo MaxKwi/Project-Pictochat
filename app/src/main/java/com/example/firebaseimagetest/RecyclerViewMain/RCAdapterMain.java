@@ -1,4 +1,4 @@
-package com.example.firebaseimagetest.RecyclerViewFollow;
+package com.example.firebaseimagetest.RecyclerViewMain;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -16,26 +16,26 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.List;
 
-public class RCAdapter extends RecyclerView.Adapter<RCViewHolders>{
+public class RCAdapterMain extends RecyclerView.Adapter<RCViewHoldersMain>{
 
     private List<Users> usersList;
     private Context context;
 
-    public RCAdapter(List<Users> usersList, Context context){
+    public RCAdapterMain(List<Users> usersList, Context context){
         this.usersList = usersList;
         this.context = context;
     }
 
     @NonNull
     @Override
-    public RCViewHolders onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public RCViewHoldersMain onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View layoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.recyclerview_followers_item, null);
-        RCViewHolders rcv = new RCViewHolders(layoutView);
+        RCViewHoldersMain rcv = new RCViewHoldersMain(layoutView);
         return rcv;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull final RCViewHolders holder, int position) {
+    public void onBindViewHolder(@NonNull final RCViewHoldersMain holder, int position) {
         holder.mUsername.setText(usersList.get(position).getUsername());
 
         if(UserInformation.friendsList.contains(usersList.get(holder.getLayoutPosition()).getUid())){
