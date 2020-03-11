@@ -38,9 +38,9 @@ public class AddFriendsActivity extends AppCompatActivity {
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
 
-    private RecyclerView pRecyclerView;
-    private RecyclerView.Adapter pAdapter;
-    private RecyclerView.LayoutManager pLayoutManager;
+//    private RecyclerView pRecyclerView;
+//    private RecyclerView.Adapter pAdapter;
+//    private RecyclerView.LayoutManager pLayoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,13 +55,13 @@ public class AddFriendsActivity extends AppCompatActivity {
         mAdapter = new RCAdapter(getDataset(), getApplication());
         mRecyclerView.setAdapter(mAdapter);
 
-        pRecyclerView = findViewById(R.id.recyclerView);
-        pRecyclerView.setNestedScrollingEnabled(false);
-        pRecyclerView.setHasFixedSize(false);
-        pLayoutManager = new LinearLayoutManager(getApplication());
-        pRecyclerView.setLayoutManager(pLayoutManager);
-        pAdapter = new RCAdapterPending(getDataset(), getApplication());
-        pRecyclerView.setAdapter(pAdapter);
+//        pRecyclerView = findViewById(R.id.recyclerViewPending);
+//        pRecyclerView.setNestedScrollingEnabled(false);
+//        pRecyclerView.setHasFixedSize(false);
+//        pLayoutManager = new LinearLayoutManager(getApplication());
+//        pRecyclerView.setLayoutManager(pLayoutManager);
+//        pAdapter = new RCAdapterPending(getDataset(), getApplication());
+//        pRecyclerView.setAdapter(pAdapter);
 
         backButton = (ImageView) findViewById(R.id.back);
 
@@ -87,7 +87,7 @@ public class AddFriendsActivity extends AppCompatActivity {
             }
         });
 
-        showPending();
+        //showPending();
 
     }
 
@@ -103,7 +103,9 @@ public class AddFriendsActivity extends AppCompatActivity {
                 {
                     getUserInfo(ds.getKey());
                 }
-                pAdapter.notifyDataSetChanged();
+                //pAdapter.notifyDataSetChanged();
+
+                System.out.println(pendingFriends.size());
             }
 
             @Override
@@ -130,15 +132,26 @@ public class AddFriendsActivity extends AppCompatActivity {
 
     private void getUserInfo(String uid)
     {
-        DatabaseReference usersDB = FirebaseDatabase.getInstance().getReference().child("users").child(uid);
+
+        final String tempFinalUid = uid;
+
+        DatabaseReference usersDB = FirebaseDatabase.getInstance().getReference().child("users");
         usersDB.addValueEventListener(new ValueEventListener() {
 
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String tempUid = dataSnapshot.getKey();
-                String tempUsername = dataSnapshot.child("username").getValue().toString();
-                Users obj = new Users(tempUsername, tempUid);
-                pendingFriends.add(obj);
+                String tempUid = dataSnapshot.child(tempFinalUid).getKey();
+                String tempUsername = dataSnapshot.child(tempFinalUid).child("username").getValue().toString();
+
+                if(dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("pending").child(tempUid).exists())
+                {
+                    Users obj = new Users(tempUsername, tempUid);
+                    pendingFriends.add(obj);
+                }
+
+
+
+
                 //pAdapter.notifyItemInserted(pendingFriends.size() - 1);
 //                pAdapter.notifyDataSetChanged();
                 //mAdapter.notifyDataSetChanged();
@@ -154,7 +167,7 @@ public class AddFriendsActivity extends AppCompatActivity {
 
     }
 
-    private void performSearch() {
+    private void performSearch() { // FIX SEARCHING
         searchBar.clearFocus();
         InputMethodManager in = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         in.hideSoftInputFromWindow(searchBar.getWindowToken(), 0);
@@ -171,11 +184,21 @@ public class AddFriendsActivity extends AppCompatActivity {
                     username = dataSnapshot.child("username").getValue().toString();
                     userID = dataSnapshot.child("userID").getValue().toString();
                 }
-                if(!userID.equals(FirebaseAuth.getInstance().getCurrentUser().getUid())){
+//                if(!userID.equals(FirebaseAuth.getInstance().getCurrentUser().getUid()))
+//                {
+//                    Users obj = new Users(username, uid);
+//                    results.add(obj);
+//                    mAdapter.notifyDataSetChanged();
+//                }
+
+                if(!userID.equals(FirebaseAuth.getInstance().getCurrentUser().getUid()))
+                {
                     Users obj = new Users(username, uid);
                     results.add(obj);
                     mAdapter.notifyDataSetChanged();
                 }
+
+                System.out.println(results.size());
             }
 
             @Override
@@ -199,6 +222,9 @@ public class AddFriendsActivity extends AppCompatActivity {
             }
         });
     }
+
+
+
 
     private void clearDB(){
         int size = this.results.size();

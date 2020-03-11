@@ -1,6 +1,8 @@
 package com.example.firebaseimagetest.RecyclerViewMain;
 
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,76 +10,57 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.firebaseimagetest.ChatActivity;
 import com.example.firebaseimagetest.R;
-import com.example.firebaseimagetest.UserInformation;
-import com.example.firebaseimagetest.Users;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.List;
 
 public class RCAdapterMain extends RecyclerView.Adapter<RCViewHoldersMain>{
 
-    private List<Users> usersList;
+    private List<ChatObject> chatLists;
     private Context context;
 
-    public RCAdapterMain(List<Users> usersList, Context context){
-        this.usersList = usersList;
+    public RCAdapterMain(List<ChatObject> usersList, Context context){
+        this.chatLists = usersList;
         this.context = context;
     }
 
     @NonNull
     @Override
     public RCViewHoldersMain onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View layoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.recyclerview_followers_item, null);
+        View layoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.recyclerview_chat_item, null);
         RCViewHoldersMain rcv = new RCViewHoldersMain(layoutView);
         return rcv;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull final RCViewHoldersMain holder, int position) {
-        holder.mUsername.setText(usersList.get(position).getUsername());
+    public void onBindViewHolder(@NonNull final RCViewHoldersMain holder, final int position) {
+        holder.mUsername.setText(chatLists.get(position).getChatId());
 
-        if(UserInformation.friendsList.contains(usersList.get(holder.getLayoutPosition()).getUid())){
-            holder.mAdd.setText("Remove");
-        }
-        else{
-            holder.mAdd.setText("Add");
-        }
-
-        holder.mAdd.setOnClickListener(new View.OnClickListener() {
+        holder.mLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                if(!UserInformation.friendsList.contains(usersList.get(holder.getLayoutPosition()).getUid())){
-                    holder.mAdd.setText("Remove");
-                    FirebaseDatabase.getInstance().getReference().child("users").child(userID).child("friends").child(usersList.get(holder.getLayoutPosition()).getUid()).setValue(true);
-                    AddUserToPending(1, usersList.get(holder.getLayoutPosition()).getUid());
-                }
-                else{
-                    holder.mAdd.setText("Add");
-                    FirebaseDatabase.getInstance().getReference().child("users").child(userID).child("friends").child(usersList.get(holder.getLayoutPosition()).getUid()).removeValue();
-                    AddUserToPending(-1, usersList.get(holder.getLayoutPosition()).getUid());
-                }
+
+                Intent intent = new Intent(view.getContext(), ChatActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("chatID", chatLists.get(holder.getAdapterPosition()).getChatId());
+                intent.putExtras(bundle);
+                view.getContext().startActivity(intent);
+
+//                String key = FirebaseDatabase.getInstance().getReference().child("chat").push().getKey();
+//
+//                FirebaseDatabase.getInstance().getReference("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat").child(key).setValue(true);
+//                FirebaseDatabase.getInstance().getReference("users").child(usersList.get(position).getUid()).child("chat").child(key).setValue(true);
+
             }
         });
-    }
 
-    private void AddUserToPending(int choice, String uid)
-    {
-        if(choice == 1)
-        {
-            FirebaseDatabase.getInstance().getReference().child("users").child(uid).child("pending").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).setValue(true);
-        }
-        else if(choice == -1)
-        {
-            FirebaseDatabase.getInstance().getReference().child("users").child(uid).child("pending").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).removeValue();
-        }
 
     }
+
 
     @Override
     public int getItemCount() {
-        return this.usersList.size();
+        return this.chatLists.size();
     }
 }

@@ -12,7 +12,11 @@ import com.example.firebaseimagetest.R;
 import com.example.firebaseimagetest.UserInformation;
 import com.example.firebaseimagetest.Users;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
 
@@ -35,7 +39,7 @@ public class RCAdapter extends RecyclerView.Adapter<RCViewHolders>{
     }
 
     @Override
-    public void onBindViewHolder(@NonNull final RCViewHolders holder, int position) {
+    public void onBindViewHolder(@NonNull final RCViewHolders holder, final int position) {
         holder.mUsername.setText(usersList.get(position).getUsername());
 
         if(UserInformation.friendsList.contains(usersList.get(holder.getLayoutPosition()).getUid())){
@@ -52,12 +56,17 @@ public class RCAdapter extends RecyclerView.Adapter<RCViewHolders>{
                 if(!UserInformation.friendsList.contains(usersList.get(holder.getLayoutPosition()).getUid())){
                     holder.mAdd.setText("Remove");
                     FirebaseDatabase.getInstance().getReference().child("users").child(userID).child("friends").child(usersList.get(holder.getLayoutPosition()).getUid()).setValue(true);
-                    AddUserToPending(1, usersList.get(holder.getLayoutPosition()).getUid());
+                    //AddUserToPending(1, usersList.get(holder.getLayoutPosition()).getUid());
+
+                    String key = FirebaseDatabase.getInstance().getReference().child("chat").push().getKey();
+                    FirebaseDatabase.getInstance().getReference("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat").child(key).setValue(true);
+                    FirebaseDatabase.getInstance().getReference("users").child(usersList.get(position).getUid()).child("chat").child(key).setValue(true);
+
                 }
                 else{
                     holder.mAdd.setText("Add");
                     FirebaseDatabase.getInstance().getReference().child("users").child(userID).child("friends").child(usersList.get(holder.getLayoutPosition()).getUid()).removeValue();
-                    AddUserToPending(-1, usersList.get(holder.getLayoutPosition()).getUid());
+                    //AddUserToPending(-1, usersList.get(holder.getLayoutPosition()).getUid());
                 }
             }
         });

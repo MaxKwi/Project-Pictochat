@@ -3,6 +3,8 @@ package com.example.firebaseimagetest;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.ContentResolver;
 import android.content.Context;
@@ -28,6 +30,9 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.firebaseimagetest.RecyclerViewFollow.RCAdapter;
+import com.example.firebaseimagetest.RecyclerViewMain.ChatObject;
+import com.example.firebaseimagetest.RecyclerViewMain.RCAdapterMain;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInApi;
@@ -45,10 +50,12 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
@@ -56,6 +63,8 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -85,6 +94,10 @@ public class MainActivity extends AppCompatActivity {
 
     private GoogleSignInClient mGoogleSignInClient;
 
+    private RecyclerView mRecyclerView;
+    private RecyclerView.Adapter mAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,6 +105,13 @@ public class MainActivity extends AppCompatActivity {
         UserInformation userInformationListener = new UserInformation();
         userInformationListener.startFetching();
 
+        mRecyclerView = findViewById(R.id.recycler_view_main);
+        mRecyclerView.setNestedScrollingEnabled(false);
+        mRecyclerView.setHasFixedSize(false);
+        mLayoutManager = new LinearLayoutManager(getApplication());
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mAdapter = new RCAdapterMain(getDataset(), getApplication());
+        mRecyclerView.setAdapter(mAdapter);
 
         Intent intent = getIntent();
         final boolean db_Initialized = intent.getBooleanExtra("initialized_db", false);
@@ -213,7 +233,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                    performSearch();
+                    //clearDB();
+                    //performSearch();
                     return true;
                 }
                 return false;
@@ -285,13 +306,101 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+
+        getUserChatList();
+
     }
 
-    private void performSearch() {
-        searchBar.clearFocus();
-        InputMethodManager in = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        in.hideSoftInputFromWindow(searchBar.getWindowToken(), 0);
-        //...perform search
+    private void performSearch() { // FIX SEARCHING
+//        searchBar.clearFocus();
+//        InputMethodManager in = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+//        in.hideSoftInputFromWindow(searchBar.getWindowToken(), 0);
+//        //...perform search
+//        DatabaseReference usersDB = FirebaseDatabase.getInstance().getReference().child("users");
+//        Query query = usersDB.orderByChild("username").startAt(searchBar.getText().toString().toUpperCase()).endAt(searchBar.getText().toString().toLowerCase() + "\uf8ff");
+//        query.addChildEventListener(new ChildEventListener() {
+//            @Override
+//            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+//                String username = "";
+//                String userID = "";
+//                String uid = dataSnapshot.getRef().getKey();
+//                if(dataSnapshot.child("username").getValue() != null){
+//                    username = dataSnapshot.child("username").getValue().toString();
+//                    userID = dataSnapshot.child("userID").getValue().toString();
+//                }
+////                if(!userID.equals(FirebaseAuth.getInstance().getCurrentUser().getUid()))
+////                {
+////                    Users obj = new Users(username, uid);
+////                    results.add(obj);
+////                    mAdapter.notifyDataSetChanged();
+////                }
+//
+//                if(!userID.equals(FirebaseAuth.getInstance().getCurrentUser().getUid()))
+//                {
+//                    Users obj = new Users(username, uid);
+//                    results.add(obj);
+//                    mAdapter.notifyDataSetChanged();
+//                }
+//
+//                System.out.println(results.size());
+//            }
+//
+//            @Override
+//            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+//
+//            }
+//
+//            @Override
+//            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+//
+//            }
+//
+//            @Override
+//            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+//
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        });
+    }
+
+    private void getUserChatList()
+    {
+        clearDB();
+        DatabaseReference mUserChatDb = FirebaseDatabase.getInstance().getReference().child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat");
+        mUserChatDb.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists())
+                {
+                    for(DataSnapshot ds : dataSnapshot.getChildren())
+                    {
+                        ChatObject mChat = new ChatObject(ds.getKey());
+                        results.add(mChat);
+                        mAdapter.notifyDataSetChanged();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void clearDB(){
+        int size = this.results.size();
+        this.results.clear();
+        mAdapter.notifyItemRangeRemoved(0, size);
+    }
+
+    private ArrayList<ChatObject> results = new ArrayList<>();
+    private ArrayList<ChatObject> getDataset(){
+        return results;
     }
 
 }

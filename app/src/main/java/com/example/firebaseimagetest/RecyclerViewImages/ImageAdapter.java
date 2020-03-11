@@ -1,4 +1,4 @@
-package com.example.firebaseimagetest;
+package com.example.firebaseimagetest.RecyclerViewImages;
 
 import android.content.Context;
 import android.view.ContextMenu;
@@ -13,6 +13,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.firebaseimagetest.R;
+import com.example.firebaseimagetest.Upload;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;

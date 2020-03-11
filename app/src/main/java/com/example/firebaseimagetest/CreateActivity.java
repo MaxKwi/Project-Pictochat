@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
@@ -52,6 +53,7 @@ public class CreateActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private RelativeLayout mLayout;
     int mDefaultColor;
+    int mCurrentColor;
     int newColor;
 
     private ImageView sendButton, drawMode, drawColor, eraser, bgcolor, savebutton, clear;
@@ -105,18 +107,18 @@ public class CreateActivity extends AppCompatActivity {
             public void onClick(View view) {
                 drawModeInt++;
 
-                if(drawModeInt % 3 == 0)
+                if(drawModeInt == 3)
                 {
                     paintView.blur();
-
+                    drawModeInt = 0;
                     Toast.makeText(CreateActivity.this, "Draw Mode: Blur", Toast.LENGTH_SHORT).show();
                 }
-                else if(drawModeInt % 2 == 0)
+                else if(drawModeInt == 2)
                 {
                     paintView.emboss();
                     Toast.makeText(CreateActivity.this, "Draw Mode: Emboss", Toast.LENGTH_SHORT).show();
                 }
-                else
+                else if(drawModeInt == 1)
                 {
                     paintView.normal();
                     Toast.makeText(CreateActivity.this, "Draw Mode: Normal", Toast.LENGTH_SHORT).show();
@@ -205,8 +207,9 @@ public class CreateActivity extends AppCompatActivity {
 
 
         mLayout = (RelativeLayout) findViewById(R.id.activity_main);
-        mDefaultColor = ContextCompat.getColor(CreateActivity.this, R.color.colorPrimary);
-
+        //mDefaultColor = ContextCompat.getColor(CreateActivity.this, R.color.colorPrimary);
+        mDefaultColor = Color.RED;
+        mCurrentColor = mDefaultColor;
         mStorageRef = FirebaseStorage.getInstance().getReference("uploads"); //string is the location in the string
         mDatabaseRef = FirebaseDatabase.getInstance().getReference("uploads");
 
@@ -368,7 +371,7 @@ public class CreateActivity extends AppCompatActivity {
     private void CallColorPicker()
     {
 
-        AmbilWarnaDialog dialog = new AmbilWarnaDialog(this, mDefaultColor, new AmbilWarnaDialog.OnAmbilWarnaListener() {
+        AmbilWarnaDialog dialog = new AmbilWarnaDialog(this, mCurrentColor, new AmbilWarnaDialog.OnAmbilWarnaListener() {
             @Override
             public void onCancel(AmbilWarnaDialog dialog) {
 
@@ -377,6 +380,7 @@ public class CreateActivity extends AppCompatActivity {
             @Override
             public void onOk(AmbilWarnaDialog dialog, int color) {
                 newColor = color;
+                mCurrentColor = newColor;
             }
         });
 
