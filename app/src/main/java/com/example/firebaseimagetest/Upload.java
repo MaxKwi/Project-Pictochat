@@ -7,6 +7,7 @@ public class Upload
 
     private String mName;
     private String mImageUrl;
+    private String mUid;
 
     private String mKey;
 
@@ -15,7 +16,7 @@ public class Upload
 
     }
 
-    public Upload(String name, String imageUrl)
+    public Upload(String name, String imageUrl, String uid)
     {
         if(name.trim().equals(""))
         {
@@ -24,6 +25,7 @@ public class Upload
 
         mName = name;
         mImageUrl = imageUrl;
+        mUid = uid;
     }
 
     public String getName()
@@ -44,6 +46,14 @@ public class Upload
     public void setImageUrl(String imageUrl)
     {
         mImageUrl = imageUrl;
+    }
+
+    public String getUid() {
+        return mUid;
+    }
+
+    public void setUid(String uid){
+        mUid = uid;
     }
 
     @Exclude

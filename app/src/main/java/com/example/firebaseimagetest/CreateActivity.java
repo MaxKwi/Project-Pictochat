@@ -33,6 +33,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -208,7 +209,7 @@ public class CreateActivity extends AppCompatActivity {
         mDefaultColor = ContextCompat.getColor(CreateActivity.this, R.color.colorPrimary);
 
         mStorageRef = FirebaseStorage.getInstance().getReference("uploads"); //string is the location in the string
-        mDatabaseRef = FirebaseDatabase.getInstance().getReference("uploads");
+        mDatabaseRef = FirebaseDatabase.getInstance().getReference("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("uploads");
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         progressBar.setVisibility(View.INVISIBLE);
@@ -272,8 +273,8 @@ public class CreateActivity extends AppCompatActivity {
 
                             //Log.d(TAG, "onSuccess: firebase download url: " + downloadUrl.toString()); //use if testing...don't need this line.
                             //Upload upload = new Upload(mEditTextFileName.getText().toString().trim(),downloadUrl.toString());
-
-                            Upload upload = new Upload("Doodle", downloadUrl.toString());
+                            String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                            Upload upload = new Upload("Doodle", downloadUrl.toString(), uid);
 
                             String uploadId = mDatabaseRef.push().getKey();
                             mDatabaseRef.child(uploadId).setValue(upload);

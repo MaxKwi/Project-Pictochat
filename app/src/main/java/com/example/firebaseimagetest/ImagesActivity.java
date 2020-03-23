@@ -48,6 +48,7 @@ import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ImagesActivity extends AppCompatActivity implements ImageAdapter.OnItemClickListener {
 
@@ -122,38 +123,58 @@ public class ImagesActivity extends AppCompatActivity implements ImageAdapter.On
         mAuth = FirebaseAuth.getInstance();
         tempUser = mAuth.getCurrentUser();
 
-        mStorage = FirebaseStorage.getInstance();
-        mDatabaseRef = FirebaseDatabase.getInstance().getReference("uploads");
+        listenForData();
+    }
 
-        mDBListener = mDatabaseRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+    private void listenForData(){
+        for(int i=0; i<UserInformation.friendsList.size(); i++){
+            mStorage = FirebaseStorage.getInstance();
+            mDatabaseRef = FirebaseDatabase.getInstance().getReference().child("users").child(UserInformation.friendsList.get(i));
 
-                mUploads.clear();
+            mDBListener = mDatabaseRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    mUploads.clear();
 
-                for(DataSnapshot postSnapshot : dataSnapshot.getChildren()){
-                    Upload upload = postSnapshot.getValue(Upload.class);
-                    upload.setKey(postSnapshot.getKey());
-                    mUploads.add(upload);
+                    String userID = mAuth.getCurrentUser().getUid();
+                    String posterID = dataSnapshot.child("userID").getValue().toString();
+
+                    System.out.println(posterID);
+
+                    for(DataSnapshot postSnapshot : dataSnapshot.child("uploads").getChildren()){
+                        Upload upload = postSnapshot.getValue(Upload.class);
+                        upload.setKey(postSnapshot.getKey());
+
+                        FirebaseUser mFirebaseUser = mAuth.getCurrentUser();
+
+                        if(mUploads.isEmpty()){
+                                mUploads.add(upload);
+                        }
+                        else{
+                            mUploads.add(0, upload);
+                        }
+
+
+                        mAdapter = new ImageAdapter(ImagesActivity.this, mUploads);
+
+                        mRecyclerView.setAdapter(mAdapter);
+
+                        mAdapter.setOnItemClickListener(ImagesActivity.this);
+
+                        mAdapter.notifyDataSetChanged();
+
+                        mProgressCircle.setVisibility(View.INVISIBLE);
+                    }
                 }
 
-//                mAdapter = new ImageAdapter(ImagesActivity.this, mUploads);
-//
-//                mRecyclerView.setAdapter(mAdapter);
-//
-//                mAdapter.setOnItemClickListener(ImagesActivity.this);
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Toast.makeText(ImagesActivity.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                    mProgressCircle.setVisibility(View.INVISIBLE);
+                }
 
-                mAdapter.notifyDataSetChanged();
-
-                mProgressCircle.setVisibility(View.INVISIBLE);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(ImagesActivity.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                mProgressCircle.setVisibility(View.INVISIBLE);
-            }
-        });
+            });
+        }
     }
 
     @Override

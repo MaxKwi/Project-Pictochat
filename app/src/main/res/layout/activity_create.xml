@@ -13,6 +13,7 @@
         android:layout_height="48dp"
         android:layout_above="@id/bottom_navigation"
         android:layout_alignParentEnd="true"
+        android:layout_marginBottom="8dp"
         app:srcCompat="@drawable/ic_send_black_24dp" />
 
     <ProgressBar
@@ -21,15 +22,16 @@
         android:layout_height="48dp"
         android:layout_alignParentEnd="true"
         android:layout_above="@id/savebutton"
+        android:layout_marginBottom="8dp"
         android:visibility="invisible" />
 
     <ImageView
         android:id="@+id/drawMode"
         android:layout_width="48dp"
         android:layout_height="48dp"
-
+        android:layout_marginBottom="8dp"
         android:layout_alignParentEnd="true"
-        app:srcCompat="@drawable/ic_create_black_24dp" />
+        app:srcCompat="@drawable/ic_brush_black_24dp" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:layout_width="wrap_content"
@@ -54,23 +56,28 @@
         android:layout_height="48dp"
         android:layout_alignParentEnd="true"
         android:layout_below="@id/drawMode"
-        app:srcCompat="@drawable/ic_border_color_black_24dp" />
+        android:layout_marginBottom="8dp"
+        app:srcCompat="@drawable/ic_color_lens_black_24dp" />
 
     <ImageView
         android:id="@+id/eraser"
-        android:layout_width="48dp"
+        android:layout_width="46dp"
         android:layout_height="48dp"
         android:layout_alignParentEnd="true"
         android:layout_below="@id/drawColor"
-        app:srcCompat="@drawable/ic_bubble_chart_black_24dp" />
+        android:layout_marginBottom="8dp"
+        android:layout_marginRight="2dp"
+        app:srcCompat="@drawable/editing_eraser_icon" />
 
     <ImageView
         android:id="@+id/bgcolor"
-        android:layout_width="48dp"
+        android:layout_width="46dp"
         android:layout_height="48dp"
         android:layout_alignParentEnd="true"
         android:layout_below="@id/eraser"
-        app:srcCompat="@drawable/ic_format_color_fill_black_24dp" />
+        android:layout_marginBottom="8dp"
+        android:layout_marginRight="2dp"
+        app:srcCompat="@drawable/paint_bucket_icon" />
 
     <ImageView
         android:id="@+id/savebutton"
@@ -78,6 +85,7 @@
         android:layout_height="48dp"
         android:layout_alignParentEnd="true"
         android:layout_above="@id/sendButton"
+        android:layout_marginBottom="8dp"
         app:srcCompat="@drawable/ic_save_black_24dp" />
 
     <ImageView
@@ -85,7 +93,8 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_alignParentEnd="true"
-        android:layout_below="@id/bgcolor"
-        app:srcCompat="@drawable/ic_crop_original_black_24dp" />
+        android:layout_above="@id/progressBar"
+        android:layout_marginBottom="8dp"
+        app:srcCompat="@drawable/ic_delete_black_24dp" />
 
 </RelativeLayout>
