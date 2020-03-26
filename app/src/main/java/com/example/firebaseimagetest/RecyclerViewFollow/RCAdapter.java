@@ -42,7 +42,7 @@ public class RCAdapter extends RecyclerView.Adapter<RCViewHolders>{
     public void onBindViewHolder(@NonNull final RCViewHolders holder, final int position) {
         holder.mUsername.setText(usersList.get(position).getUsername());
 
-        if(UserInformation.friendsList.contains(usersList.get(holder.getLayoutPosition()).getUid())){
+        if(UserInformation.friendsList.contains(usersList.get(holder.getLayoutPosition()).getUid()) || UserInformation.pendingList.contains(usersList.get(holder.getLayoutPosition()).getUid())){
             holder.mAdd.setText("Remove");
         }
         else{
@@ -52,38 +52,43 @@ public class RCAdapter extends RecyclerView.Adapter<RCViewHolders>{
         holder.mAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                if(!UserInformation.friendsList.contains(usersList.get(holder.getLayoutPosition()).getUid())){
+                final String userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                final String otherUserID = usersList.get(holder.getLayoutPosition()).getUid();
+                if(UserInformation.pendingList.contains(otherUserID))
+                {
+                    holder.mAdd.setText("Add");
+                    FirebaseDatabase.getInstance().getReference().child("users").child(userID).child("pending").child(otherUserID).removeValue();
+                    FirebaseDatabase.getInstance().getReference().child("users").child(otherUserID).child("incoming").child(userID).removeValue();
+                }
+                else if(!UserInformation.friendsList.contains(otherUserID)){
                     holder.mAdd.setText("Remove");
-                    FirebaseDatabase.getInstance().getReference().child("users").child(userID).child("friends").child(usersList.get(holder.getLayoutPosition()).getUid()).setValue(true);
+                    FirebaseDatabase.getInstance().getReference().child("users").child(userID).child("pending").child(otherUserID).setValue(true);
+                    FirebaseDatabase.getInstance().getReference().child("users").child(otherUserID).child("incoming").child(userID).setValue(true);
                     //AddUserToPending(1, usersList.get(holder.getLayoutPosition()).getUid());
 
-                    String key = FirebaseDatabase.getInstance().getReference().child("chat").push().getKey();
-                    FirebaseDatabase.getInstance().getReference("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat").child(key).setValue(true);
-                    FirebaseDatabase.getInstance().getReference("users").child(usersList.get(position).getUid()).child("chat").child(key).setValue(true);
+//                    String key = FirebaseDatabase.getInstance().getReference().child("chat").push().getKey();
+//                    FirebaseDatabase.getInstance().getReference("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat").child(key).setValue(true);
+//                    FirebaseDatabase.getInstance().getReference("users").child(usersList.get(position).getUid()).child("chat").child(key).setValue(true);
 
+                }
+                else if(UserInformation.friendsList.contains(otherUserID))
+                {
+                    holder.mAdd.setText("Add");
+                    FirebaseDatabase.getInstance().getReference().child("users").child(userID).child("friends").child(otherUserID).removeValue();
+                    FirebaseDatabase.getInstance().getReference().child("users").child(otherUserID).child("friends").child(userID).removeValue();
                 }
                 else{
                     holder.mAdd.setText("Add");
-                    FirebaseDatabase.getInstance().getReference().child("users").child(userID).child("friends").child(usersList.get(holder.getLayoutPosition()).getUid()).removeValue();
+
+
+                    //FirebaseDatabase.getInstance().getReference().child("users").child(userID).child("friends").child(otherUserID).removeValue();
                     //AddUserToPending(-1, usersList.get(holder.getLayoutPosition()).getUid());
                 }
             }
         });
     }
 
-    private void AddUserToPending(int choice, String uid)
-    {
-        if(choice == 1)
-        {
-            FirebaseDatabase.getInstance().getReference().child("users").child(uid).child("pending").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).setValue(true);
-        }
-        else if(choice == -1)
-        {
-            FirebaseDatabase.getInstance().getReference().child("users").child(uid).child("pending").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).removeValue();
-        }
 
-    }
 
     @Override
     public int getItemCount() {

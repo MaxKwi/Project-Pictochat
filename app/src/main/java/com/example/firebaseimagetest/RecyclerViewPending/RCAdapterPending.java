@@ -38,7 +38,7 @@ public class RCAdapterPending extends RecyclerView.Adapter<RCViewPending>{
         holder.mUsername.setText(usersList.get(position).getUsername());
 
         holder.pAdd.setText("Accept");
-        holder.pRevoke.setText("Revoke");
+        holder.pRevoke.setText("Reject");
 
 
 
@@ -47,8 +47,10 @@ public class RCAdapterPending extends RecyclerView.Adapter<RCViewPending>{
             public void onClick(View view)
             {
                 String uid = usersList.get(holder.getLayoutPosition()).getUid();
-                FirebaseDatabase.getInstance().getReference("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("pending").child(uid).removeValue();
+                FirebaseDatabase.getInstance().getReference("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("incoming").child(uid).removeValue();
                 FirebaseDatabase.getInstance().getReference("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("friends").child(uid).setValue(true);
+                FirebaseDatabase.getInstance().getReference("users").child(uid).child("pending").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).removeValue();
+                FirebaseDatabase.getInstance().getReference("users").child(uid).child("friends").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).setValue(true);
                 usersList.remove(holder.getLayoutPosition());
                 notifyItemRemoved(holder.getLayoutPosition());
                 notifyItemRangeChanged(holder.getLayoutPosition(), usersList.size());
@@ -60,8 +62,8 @@ public class RCAdapterPending extends RecyclerView.Adapter<RCViewPending>{
             public void onClick(View view)
             {
                 String uid = usersList.get(holder.getLayoutPosition()).getUid();
-                FirebaseDatabase.getInstance().getReference("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("pending").child(uid).removeValue();
-                FirebaseDatabase.getInstance().getReference("users").child(uid).child("friends").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).removeValue();
+                FirebaseDatabase.getInstance().getReference("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("incoming").child(uid).removeValue();
+                FirebaseDatabase.getInstance().getReference("users").child(uid).child("pending").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).removeValue();
                 usersList.remove(holder.getLayoutPosition());
                 notifyItemRemoved(holder.getLayoutPosition());
                 notifyItemRangeChanged(holder.getLayoutPosition(), usersList.size());

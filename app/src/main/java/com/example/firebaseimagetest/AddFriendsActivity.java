@@ -29,14 +29,15 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class AddFriendsActivity extends AppCompatActivity {
 
     private ImageView backButton;
     private EditText searchBar;
-    private RecyclerView mRecyclerView;
-    private RecyclerView.Adapter mAdapter;
-    private RecyclerView.LayoutManager mLayoutManager;
+    private RecyclerView mRecyclerView, iRecyclerView;
+    private RecyclerView.Adapter mAdapter, iAdapter;
+    private RecyclerView.LayoutManager mLayoutManager, iLayoutManager;
 
 //    private RecyclerView pRecyclerView;
 //    private RecyclerView.Adapter pAdapter;
@@ -54,6 +55,14 @@ public class AddFriendsActivity extends AppCompatActivity {
         mRecyclerView.setLayoutManager(mLayoutManager);
         mAdapter = new RCAdapter(getDataset(), getApplication());
         mRecyclerView.setAdapter(mAdapter);
+
+        iRecyclerView = findViewById(R.id.IncomingRecyclerView);
+        iRecyclerView.setNestedScrollingEnabled(false);
+        iRecyclerView.setHasFixedSize(false);
+        iLayoutManager = new LinearLayoutManager(getApplication());
+        iRecyclerView.setLayoutManager(iLayoutManager);
+        iAdapter = new RCAdapterPending(getIncoming(), getApplication());
+        iRecyclerView.setAdapter(iAdapter);
 
 //        pRecyclerView = findViewById(R.id.recyclerViewPending);
 //        pRecyclerView.setNestedScrollingEnabled(false);
@@ -88,73 +97,37 @@ public class AddFriendsActivity extends AppCompatActivity {
         });
 
         //showPending();
-
+        showIncoming();
     }
 
-    private void showPending()
+    private void showIncoming()
     {
-        DatabaseReference usersDB = FirebaseDatabase.getInstance().getReference().child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
-        Query query = usersDB.orderByChild("pending");
-        query.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s)
-            {
-                for(DataSnapshot ds : dataSnapshot.getChildren())
-                {
-                    getUserInfo(ds.getKey());
-                }
-                //pAdapter.notifyDataSetChanged();
-
-                System.out.println(pendingFriends.size());
-            }
-
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    private void getUserInfo(String uid)
-    {
-
-        final String tempFinalUid = uid;
-
-        DatabaseReference usersDB = FirebaseDatabase.getInstance().getReference().child("users");
-        usersDB.addValueEventListener(new ValueEventListener() {
-
+        DatabaseReference incomingDB = FirebaseDatabase.getInstance().getReference().child("users");
+        Query query = incomingDB.orderByChild("userID");
+        query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String tempUid = dataSnapshot.child(tempFinalUid).getKey();
-                String tempUsername = dataSnapshot.child(tempFinalUid).child("username").getValue().toString();
-
-                if(dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("pending").child(tempUid).exists())
+                for(DataSnapshot ds : dataSnapshot.getChildren())
                 {
-                    Users obj = new Users(tempUsername, tempUid);
-                    pendingFriends.add(obj);
+
+                    String uid = ds.child("userID").getValue().toString();
+                    //System.out.println(uid);
+
+                    if(!FirebaseAuth.getInstance().getCurrentUser().getUid().equals(uid) && UserInformation.incomingList.contains(uid))
+                    {
+                        //System.out.println("TRUEEEEEEEEEEEEEEEE");
+                        //System.out.println(uid);
+
+                        String userID = ds.child("userID").getValue().toString();
+                        String username = ds.child("username").getValue().toString();
+
+                        Users obj = new Users(username, uid);
+                        incomings.add(obj);
+                        iAdapter.notifyDataSetChanged();
+
+                    }
+
                 }
-
-
-
-
-                //pAdapter.notifyItemInserted(pendingFriends.size() - 1);
-//                pAdapter.notifyDataSetChanged();
-                //mAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -162,10 +135,108 @@ public class AddFriendsActivity extends AppCompatActivity {
 
             }
         });
-
-        //System.out.println("finished");
+//        for(DataSnapshot ds : dataSnapshot.getChildren())
+//        {
+//
+//            String uid = "";
+//            System.out.println(uid);
+//            if(UserInformation.incomingList.contains(uid))
+//            {
+//                String username = "";
+//                String userID = "";
+//
+//                if(ds.child("username").getValue() != null){
+//                    username = ds.child("username").getValue().toString();
+//                    userID = ds.child("userID").getValue().toString();
+//                }
+//
+//                if(!userID.equals(FirebaseAuth.getInstance().getCurrentUser().getUid()))
+//                {
+//                    Users obj = new Users(username, uid);
+//                    incomings.add(obj);
+//                    iAdapter.notifyDataSetChanged();
+//                }
+//            }
+//
+//        }
 
     }
+
+//    private void showPending()
+//    {
+//        DatabaseReference usersDB = FirebaseDatabase.getInstance().getReference().child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+//        Query query = usersDB.orderByChild("pending");
+//        query.addChildEventListener(new ChildEventListener() {
+//            @Override
+//            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s)
+//            {
+//                for(DataSnapshot ds : dataSnapshot.getChildren())
+//                {
+//                    getUserInfo(ds.getKey());
+//                }
+//                //pAdapter.notifyDataSetChanged();
+//
+//                System.out.println(pendingFriends.size());
+//            }
+//
+//            @Override
+//            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+//
+//            }
+//
+//            @Override
+//            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+//
+//            }
+//
+//            @Override
+//            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+//
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        });
+//    }
+
+//    private void getUserInfo(String uid)
+//    {
+//
+//        final String tempFinalUid = uid;
+//
+//        DatabaseReference usersDB = FirebaseDatabase.getInstance().getReference().child("users");
+//        usersDB.addValueEventListener(new ValueEventListener() {
+//
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                String tempUid = dataSnapshot.child(tempFinalUid).getKey();
+//                String tempUsername = dataSnapshot.child(tempFinalUid).child("username").getValue().toString();
+//
+//                if(dataSnapshot.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("incoming").child(tempUid).exists())
+//                {
+//                    Users obj = new Users(tempUsername, tempUid);
+//                    pendingFriends.add(obj);
+//                }
+//
+//
+//
+//
+//                //pAdapter.notifyItemInserted(pendingFriends.size() - 1);
+////                pAdapter.notifyDataSetChanged();
+//                //mAdapter.notifyDataSetChanged();
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        });
+//
+//        //System.out.println("finished");
+//
+//    }
 
     private void performSearch() { // FIX SEARCHING
         searchBar.clearFocus();
@@ -191,14 +262,14 @@ public class AddFriendsActivity extends AppCompatActivity {
 //                    mAdapter.notifyDataSetChanged();
 //                }
 
-                if(!userID.equals(FirebaseAuth.getInstance().getCurrentUser().getUid()))
+                if(!userID.equals(FirebaseAuth.getInstance().getCurrentUser().getUid()) && !UserInformation.incomingList.contains(userID))
                 {
                     Users obj = new Users(username, uid);
                     results.add(obj);
                     mAdapter.notifyDataSetChanged();
                 }
 
-                System.out.println(results.size());
+                //System.out.println(results.size());
             }
 
             @Override
@@ -232,9 +303,11 @@ public class AddFriendsActivity extends AppCompatActivity {
         mAdapter.notifyItemRangeRemoved(0, size);
     }
 
-    private ArrayList<Users> pendingFriends = new ArrayList<>();
+//    private ArrayList<Users> pendingFriends = new ArrayList<>();
+    private ArrayList<Users> incomings = new ArrayList<>();
     private ArrayList<Users> results = new ArrayList<>();
     private ArrayList<Users> getDataset(){
         return results;
     }
+    private ArrayList<Users> getIncoming() {return incomings; }
 }
