@@ -42,9 +42,10 @@ public class RCAdapterMain extends RecyclerView.Adapter<RCViewHoldersMain>{
             public void onClick(View view) {
 
                 Intent intent = new Intent(view.getContext(), ChatActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putString("chatID", chatLists.get(holder.getAdapterPosition()).getChatId());
-                intent.putExtras(bundle);
+//                Bundle bundle = new Bundle();
+//                bundle.putString("chatID", chatLists.get(holder.getAdapterPosition()).getChatId());
+//                intent.putExtras(bundle);
+                intent.putExtra("chatObject", chatLists.get(holder.getAdapterPosition()));
                 view.getContext().startActivity(intent);
 
 //                String key = FirebaseDatabase.getInstance().getReference().child("chat").push().getKey();

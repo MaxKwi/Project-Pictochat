@@ -11,8 +11,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.firebaseimagetest.R;
 import com.example.firebaseimagetest.Users;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class RCAdapterPending extends RecyclerView.Adapter<RCViewPending>{
@@ -34,7 +37,7 @@ public class RCAdapterPending extends RecyclerView.Adapter<RCViewPending>{
     }
 
     @Override
-    public void onBindViewHolder(@NonNull final RCViewPending holder, int position) {
+    public void onBindViewHolder(@NonNull final RCViewPending holder, final int position) {
         holder.mUsername.setText(usersList.get(position).getUsername());
 
         holder.pAdd.setText("Accept");
@@ -51,6 +54,8 @@ public class RCAdapterPending extends RecyclerView.Adapter<RCViewPending>{
                 FirebaseDatabase.getInstance().getReference("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("friends").child(uid).setValue(true);
                 FirebaseDatabase.getInstance().getReference("users").child(uid).child("pending").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).removeValue();
                 FirebaseDatabase.getInstance().getReference("users").child(uid).child("friends").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).setValue(true);
+                createChat(position, FirebaseAuth.getInstance().getCurrentUser().getUid(), uid);
+                //InitializeChatID(FirebaseAuth.getInstance().getCurrentUser().getUid(), uid);
                 usersList.remove(holder.getLayoutPosition());
                 notifyItemRemoved(holder.getLayoutPosition());
                 notifyItemRangeChanged(holder.getLayoutPosition(), usersList.size());
@@ -69,6 +74,31 @@ public class RCAdapterPending extends RecyclerView.Adapter<RCViewPending>{
                 notifyItemRangeChanged(holder.getLayoutPosition(), usersList.size());
             }
         });
+    }
+
+    private void createChat(int position, String myUid, String otherUid)
+    {
+        String key = FirebaseDatabase.getInstance().getReference().child("chat").push().getKey();
+
+        HashMap newChatMap = new HashMap();
+        newChatMap.put("id", key);
+        newChatMap.put("users/" + otherUid, true);
+        newChatMap.put("users/" + myUid, true);
+
+        DatabaseReference chatInfoDb = FirebaseDatabase.getInstance().getReference().child("chat").child(key).child("info");
+        chatInfoDb.updateChildren(newChatMap);
+
+        InitializeChatID(myUid, otherUid, key);
+
+    }
+
+    private void InitializeChatID(String myUid, String otherUid, String key)
+    {
+        //String key = FirebaseDatabase.getInstance().getReference().child("chat").push().getKey();
+
+        FirebaseDatabase.getInstance().getReference().child("users").child(myUid).child("chat").child(key).setValue(otherUid);
+        FirebaseDatabase.getInstance().getReference().child("users").child(otherUid).child("chat").child(key).setValue(myUid);
+
     }
 
     @Override

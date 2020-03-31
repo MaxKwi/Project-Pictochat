@@ -1,6 +1,7 @@
 package com.example.firebaseimagetest.RecyclerViewFollow;
 
 import android.content.Context;
+import android.provider.ContactsContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
@@ -76,6 +78,9 @@ public class RCAdapter extends RecyclerView.Adapter<RCViewHolders>{
                     holder.mAdd.setText("Add");
                     FirebaseDatabase.getInstance().getReference().child("users").child(userID).child("friends").child(otherUserID).removeValue();
                     FirebaseDatabase.getInstance().getReference().child("users").child(otherUserID).child("friends").child(userID).removeValue();
+
+                    RemoveChatChild(otherUserID);
+
                 }
                 else{
                     holder.mAdd.setText("Add");
@@ -84,6 +89,33 @@ public class RCAdapter extends RecyclerView.Adapter<RCViewHolders>{
                     //FirebaseDatabase.getInstance().getReference().child("users").child(userID).child("friends").child(otherUserID).removeValue();
                     //AddUserToPending(-1, usersList.get(holder.getLayoutPosition()).getUid());
                 }
+            }
+        });
+    }
+
+    private void RemoveChatChild(final String otherUID)
+    {
+        DatabaseReference chatIDDB = FirebaseDatabase.getInstance().getReference().child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat");
+        chatIDDB.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot ds : dataSnapshot.getChildren())
+                {
+                    String linkedUID = ds.getValue().toString();
+                    String linkedPath = ds.getKey();
+                    if(linkedUID.equals(otherUID))
+                    {
+                        FirebaseDatabase.getInstance().getReference().child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat").child(linkedPath).removeValue();
+                        FirebaseDatabase.getInstance().getReference().child("users").child(otherUID).child("chat").child(linkedPath).removeValue();
+                        FirebaseDatabase.getInstance().getReference().child("chat").child(linkedPath).removeValue();
+                        break;
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
             }
         });
     }

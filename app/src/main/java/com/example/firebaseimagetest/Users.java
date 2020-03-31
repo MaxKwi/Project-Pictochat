@@ -1,8 +1,16 @@
 package com.example.firebaseimagetest;
 
-public class Users {
+import java.io.Serializable;
+
+public class Users implements Serializable {
     private String username;
     private String uid;
+    private String notificationKey;
+
+    public Users(String uid)
+    {
+        this.uid = uid;
+    }
 
     public Users(String username, String uid){
         this.username = username;
@@ -21,7 +29,14 @@ public class Users {
         return username;
     }
 
+    public String getNotificationKey() { return notificationKey; }
+
     public void setUsername(String username){
         this.username = username;
+    }
+
+    public void setNotificationKey(String notificationKey)
+    {
+        this.notificationKey = notificationKey;
     }
 }

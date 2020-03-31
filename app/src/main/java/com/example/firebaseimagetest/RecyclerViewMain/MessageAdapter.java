@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.firebaseimagetest.R;
+import com.stfalcon.frescoimageviewer.ImageViewer;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -37,6 +38,20 @@ public class MessageAdapter extends RecyclerView.Adapter<RCViewChatHolders>
 
         holder.mMessage.setText(messageList.get(position).getText());
         holder.mSender.setText(messageList.get(position).getSenderId());
+
+        if(messageList.get(holder.getAdapterPosition()).getMediaUrlList().isEmpty())
+        {
+            holder.mViewMedia.setVisibility(View.GONE);
+        }
+
+        holder.mViewMedia.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new ImageViewer.Builder(view.getContext(), messageList.get(holder.getAdapterPosition()).getMediaUrlList())
+                        .setStartPosition(0)
+                        .show();
+            }
+        });
 
     }
 

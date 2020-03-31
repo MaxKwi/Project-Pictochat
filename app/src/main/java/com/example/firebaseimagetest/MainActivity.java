@@ -33,6 +33,7 @@ import android.widget.Toast;
 import com.example.firebaseimagetest.RecyclerViewFollow.RCAdapter;
 import com.example.firebaseimagetest.RecyclerViewMain.ChatObject;
 import com.example.firebaseimagetest.RecyclerViewMain.RCAdapterMain;
+import com.facebook.drawee.backends.pipeline.Fresco;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInApi;
@@ -62,6 +63,7 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
+import com.onesignal.OneSignal;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -105,6 +107,8 @@ public class MainActivity extends AppCompatActivity {
         UserInformation userInformationListener = new UserInformation();
         userInformationListener.startFetching();
 
+        Fresco.initialize(this);
+
         mRecyclerView = findViewById(R.id.recycler_view_main);
         mRecyclerView.setNestedScrollingEnabled(false);
         mRecyclerView.setHasFixedSize(false);
@@ -138,6 +142,16 @@ public class MainActivity extends AppCompatActivity {
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();
+
+        OneSignal.startInit(this).init();
+        OneSignal.setSubscription(true);
+        OneSignal.idsAvailable(new OneSignal.IdsAvailableHandler() {
+            @Override
+            public void idsAvailable(String userId, String registrationId) {
+                FirebaseDatabase.getInstance().getReference().child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("notificationKey").setValue(userId);
+            }
+        });
+        OneSignal.setInFocusDisplaying(OneSignal.OSInFocusDisplayOption.Notification);
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
@@ -262,8 +276,10 @@ public class MainActivity extends AppCompatActivity {
                 signOut.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem menuItem) {
-                        mAuth.signOut();
 
+                        OneSignal.setSubscription(false);
+
+                        mAuth.signOut();
                         mGoogleSignInClient.revokeAccess();
 
                         Intent intent = new Intent(MainActivity.this, SignInActivity.class);
@@ -380,8 +396,79 @@ public class MainActivity extends AppCompatActivity {
                     {
                         ChatObject mChat = new ChatObject(ds.getKey());
                         results.add(mChat);
-                        mAdapter.notifyDataSetChanged();
+                        getChatData(mChat.getChatId());
                     }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void getChatData(String chatId)
+    {
+
+        DatabaseReference mChatDB = FirebaseDatabase.getInstance().getReference().child("chat").child(chatId).child("info");
+        mChatDB.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists())
+                {
+                    String chatId = "";
+                    if(dataSnapshot.child("id").getValue() != null)
+                    {
+                        chatId = dataSnapshot.child("id").getValue().toString();
+                    }
+
+                    for(DataSnapshot userSnapshot : dataSnapshot.child("users").getChildren())
+                    {
+                        for(ChatObject mChat : results)
+                        {
+                            if(mChat.getChatId().equals(chatId))
+                            {
+                                Users mUser = new Users(userSnapshot.getKey());
+                                mChat.addUserToArrayList(mUser);
+                                getUserData(mUser);
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
+    private void getUserData(Users mUser)
+    {
+        DatabaseReference mUserDb = FirebaseDatabase.getInstance().getReference().child("users").child(mUser.getUid());
+        mUserDb.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Users mUser = new Users(dataSnapshot.getKey());
+
+                if(dataSnapshot.child("notificationKey").getValue() != null)
+                {
+                    mUser.setNotificationKey(dataSnapshot.child("notificationKey").getValue().toString());
+
+                    for(ChatObject mChat : results)
+                    {
+                        for(Users mUserIt : mChat.getUserObjectArrayList())
+                        {
+                            if(mUserIt.getUid().equals(mUser.getUid()))
+                            {
+                                mUserIt.setNotificationKey(mUser.getNotificationKey());
+                            }
+                        }
+                    }
+                    mAdapter.notifyDataSetChanged();
                 }
             }
 
