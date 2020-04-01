@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
     //private ImageView mImageView;
     //private ProgressBar mProgressBar;
 
-    private ImageView profileIcon, addFriends;
+    private ImageView profileIcon, addFriends, createChat;
 
     private Uri mImageUri;
 
@@ -131,6 +131,7 @@ public class MainActivity extends AppCompatActivity {
         //mTextViewShowUploads = findViewById(R.id.text_view_show_uploads);
         searchBar = findViewById(R.id.editText);
         addFriends = findViewById(R.id.addFriend);
+        createChat = findViewById(R.id.startChatCreate);
         //mImageView = findViewById(R.id.image_view);
         //mProgressBar = findViewById(R.id.progress_bar);
 
@@ -239,6 +240,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, AddFriendsActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        createChat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, MultiRoomChatActivity.class);
                 startActivity(intent);
             }
         });

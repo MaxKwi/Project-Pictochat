@@ -9,7 +9,7 @@
 
     <EditText
         android:id="@+id/editText"
-        android:layout_width="266dp"
+        android:layout_width="220dp"
         android:layout_height="48dp"
         android:layout_toEndOf="@+id/profile"
         android:layout_marginTop="10dp"
@@ -46,11 +46,23 @@
         android:layout_width="36dp"
         android:layout_height="36dp"
         android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
+        android:layout_toRightOf="@id/editText"
         android:src="@drawable/ic_person_add_black_24dp"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="20dp"
         android:layout_marginTop="15dp" />
+
+    <ImageView
+        android:id="@+id/startChatCreate"
+        android:layout_alignParentRight="true"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_alignParentTop="true"
+
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginRight="15dp"
+        android:src="@drawable/ic_mode_comment_black_24dp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_above="@id/bottom_navigation"

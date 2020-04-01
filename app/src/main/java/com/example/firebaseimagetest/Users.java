@@ -6,6 +6,7 @@ public class Users implements Serializable {
     private String username;
     private String uid;
     private String notificationKey;
+    private boolean selected = false;
 
     public Users(String uid)
     {
@@ -34,6 +35,10 @@ public class Users implements Serializable {
     public void setUsername(String username){
         this.username = username;
     }
+
+    public void setSelected(boolean selected) {this.selected = selected;}
+
+    public boolean getSelected() { return selected;}
 
     public void setNotificationKey(String notificationKey)
     {
