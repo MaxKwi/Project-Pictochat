@@ -1,10 +1,13 @@
 package com.example.firebaseimagetest;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.ContextMenu;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -13,6 +16,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -23,6 +31,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
     private Context mContext;
     private List<Upload> mUploads;
     private OnItemClickListener mListener;
+    private String username="";
 
     public ImageAdapter(Context context, List<Upload> uploads)
     {
@@ -38,15 +47,28 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) {
-        Upload uploadCurrent = mUploads.get(position);
-        holder.textViewName.setText(uploadCurrent.getName());
-        Picasso.with(mContext)
-                .load(uploadCurrent.getImageUrl())
-                .placeholder(R.mipmap.ic_launcher)
-                .fit()
-                //.centerCrop()
-                .into(holder.imageView);
+    public void onBindViewHolder(@NonNull final ImageViewHolder holder, int position) {
+        final Upload uploadCurrent = mUploads.get(position);
+
+        DatabaseReference usernameDB = FirebaseDatabase.getInstance().getReference().child("users").child(uploadCurrent.getUid()).child("username");
+        usernameDB.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                username = dataSnapshot.getValue().toString();
+                holder.textViewName.setText(username);
+                Picasso.with(mContext)
+                        .load(uploadCurrent.getImageUrl())
+                        .placeholder(R.mipmap.ic_launcher)
+                        .fit()
+                        //.centerCrop()
+                        .into(holder.imageView);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override
@@ -60,6 +82,21 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
         public TextView textViewName;
         public ImageView imageView;
 
+        final GestureDetector gestureDetector = new GestureDetector(mContext, new GestureDetector.SimpleOnGestureListener(){
+            @Override
+            public boolean onDoubleTap(MotionEvent e){
+                Log.d("TEST", "DOUBLE TAP");
+                if(mListener != null)
+                {
+                    int position = getAdapterPosition();
+                    if(position != RecyclerView.NO_POSITION)
+                    {
+                        mListener.onDoubleTap(position);
+                    }
+                }
+                return true;
+            }
+        });
 
         public ImageViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -69,6 +106,12 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
 
             itemView.setOnClickListener(this);
             itemView.setOnCreateContextMenuListener(this);
+            itemView.setOnTouchListener(new View.OnTouchListener(){
+                @Override
+                public boolean onTouch(View v, MotionEvent event){
+                    return gestureDetector.onTouchEvent(event);
+                }
+            });
 
         }
 
@@ -122,10 +165,11 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
     {
         void onItemClick(int position);
 
+        void onDoubleTap(int position);
+
         void onSaveClick(int position);
 
         void onDeleteClick(int position);
-
 
     }
 

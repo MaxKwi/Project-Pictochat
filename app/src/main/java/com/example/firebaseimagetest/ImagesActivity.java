@@ -103,8 +103,6 @@ public class ImagesActivity extends AppCompatActivity implements ImageAdapter.On
             }
         });
 
-
-
         mProgressCircle = findViewById(R.id.progress_circle);
 
         mRecyclerView = findViewById(R.id.recycler_view);
@@ -148,7 +146,7 @@ public class ImagesActivity extends AppCompatActivity implements ImageAdapter.On
                         FirebaseUser mFirebaseUser = mAuth.getCurrentUser();
 
                         if(mUploads.isEmpty()){
-                                mUploads.add(upload);
+                            mUploads.add(upload);
                         }
                         else{
                             mUploads.add(0, upload);
@@ -179,7 +177,13 @@ public class ImagesActivity extends AppCompatActivity implements ImageAdapter.On
 
     @Override
     public void onItemClick(int position) {
-        Toast.makeText(this, "Normal click at position: " + position, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "Normal click at position: " + position, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDoubleTap(int position) {
+        saveImage(position);
+        Toast.makeText(this, "Saved!", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -190,21 +194,40 @@ public class ImagesActivity extends AppCompatActivity implements ImageAdapter.On
 
     private void saveImage(int position)
     {
-
         userSB = FirebaseStorage.getInstance().getReference().child("saved").child(tempUser.getUid());
-        Upload selectedItem = mUploads.get(position);
+        final Upload selectedItem = mUploads.get(position);
         final String selectedKey = selectedItem.getKey();
-
         StorageReference imageRef = mStorage.getReferenceFromUrl(selectedItem.getImageUrl());
+        final String userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
+        DatabaseReference savedRef = FirebaseDatabase.getInstance().getReference().child("users").child(userID).child("saved");
+        savedRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.hasChild(selectedKey)){
+                    deleteImageInfo(userID, selectedKey);
+                }
+                else{
+                    saveImageInfo(userID, selectedKey, selectedItem);
+                }
+            }
 
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-
-
-
+            }
+        });
     }
 
+    private void saveImageInfo(String userID, String selectedKey, Upload selectedItem){
+        FirebaseDatabase.getInstance().getReference().child("users").child(userID).child("saved").child(selectedKey).child("imageUrl").setValue(selectedItem.getImageUrl());
+        FirebaseDatabase.getInstance().getReference().child("users").child(userID).child("saved").child(selectedKey).child("name").setValue(selectedItem.getName());
+        FirebaseDatabase.getInstance().getReference().child("users").child(userID).child("saved").child(selectedKey).child("uid").setValue(selectedItem.getUid());
+    }
 
+    private void deleteImageInfo(String userID, String selectedKey){
+        FirebaseDatabase.getInstance().getReference().child("users").child(userID).child("saved").child(selectedKey).removeValue();
+    }
 
     public  boolean isStoragePermissionGranted() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

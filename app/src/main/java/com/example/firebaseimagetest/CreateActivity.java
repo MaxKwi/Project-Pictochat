@@ -244,10 +244,9 @@ public class CreateActivity extends AppCompatActivity {
     private void uploadFile(){
 
         if (mImageUri != null){
-            //System.out.println("works");
+
             StorageReference fileReference = mStorageRef.child(System.currentTimeMillis() + "." + getFileExtension(mImageUri));
-            //System.out.println("past storage ref");
-            //System.out.println("past storage ref");
+
             mUploadTask = fileReference.putFile(mImageUri)
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
@@ -299,9 +298,6 @@ public class CreateActivity extends AppCompatActivity {
                         }
                     });
         }
-
-
-
         else{
             Toast.makeText(this, "No file selected", Toast.LENGTH_SHORT).show();
         }
@@ -324,7 +320,6 @@ public class CreateActivity extends AppCompatActivity {
             {
                 mImageUri = getImageUri(this, image);
                 uploadFile();
-
             }
             else
             {
