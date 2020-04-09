@@ -3,6 +3,8 @@ package com.example.firebaseimagetest;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.ContentResolver;
 import android.content.Context;
@@ -28,6 +30,10 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.firebaseimagetest.RecyclerViewFollow.RCAdapter;
+import com.example.firebaseimagetest.RecyclerViewMain.ChatObject;
+import com.example.firebaseimagetest.RecyclerViewMain.RCAdapterMain;
+import com.facebook.drawee.backends.pipeline.Fresco;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInApi;
@@ -45,17 +51,22 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
+import com.onesignal.OneSignal;
 import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -69,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
     //private ImageView mImageView;
     //private ProgressBar mProgressBar;
 
-    private ImageView profileIcon, addFriends;
+    private ImageView profileIcon, addFriends, createChat;
 
     private Uri mImageUri;
 
@@ -83,7 +94,14 @@ public class MainActivity extends AppCompatActivity {
 
     FirebaseAuth mAuth;
 
+    private ArrayList<String> tempChats;
+    private ArrayList<String> tempFriends;
+
     private GoogleSignInClient mGoogleSignInClient;
+
+    private RecyclerView mRecyclerView;
+    private RecyclerView.Adapter mAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +110,15 @@ public class MainActivity extends AppCompatActivity {
         UserInformation userInformationListener = new UserInformation();
         userInformationListener.startFetching();
 
+        Fresco.initialize(this);
+
+        mRecyclerView = findViewById(R.id.recycler_view_main);
+        mRecyclerView.setNestedScrollingEnabled(false);
+        mRecyclerView.setHasFixedSize(false);
+        mLayoutManager = new LinearLayoutManager(getApplication());
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mAdapter = new RCAdapterMain(getDataset(), getApplication());
+        mRecyclerView.setAdapter(mAdapter);
 
         Intent intent = getIntent();
         final boolean db_Initialized = intent.getBooleanExtra("initialized_db", false);
@@ -107,6 +134,7 @@ public class MainActivity extends AppCompatActivity {
         //mTextViewShowUploads = findViewById(R.id.text_view_show_uploads);
         searchBar = findViewById(R.id.editText);
         addFriends = findViewById(R.id.addFriend);
+        createChat = findViewById(R.id.startChatCreate);
         //mImageView = findViewById(R.id.image_view);
         //mProgressBar = findViewById(R.id.progress_bar);
 
@@ -118,6 +146,16 @@ public class MainActivity extends AppCompatActivity {
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();
+
+        OneSignal.startInit(this).init();
+        OneSignal.setSubscription(true);
+        OneSignal.idsAvailable(new OneSignal.IdsAvailableHandler() {
+            @Override
+            public void idsAvailable(String userId, String registrationId) {
+                FirebaseDatabase.getInstance().getReference().child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("notificationKey").setValue(userId);
+            }
+        });
+        OneSignal.setInFocusDisplaying(OneSignal.OSInFocusDisplayOption.Notification);
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
@@ -209,11 +247,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        createChat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, MultiRoomChatActivity.class);
+                startActivity(intent);
+            }
+        });
+
         searchBar.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                    performSearch();
+                    //clearDB();
+                    //performSearch();
                     return true;
                 }
                 return false;
@@ -241,8 +288,10 @@ public class MainActivity extends AppCompatActivity {
                 signOut.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem menuItem) {
-                        mAuth.signOut();
 
+                        OneSignal.setSubscription(false);
+
+                        mAuth.signOut();
                         mGoogleSignInClient.revokeAccess();
 
                         Intent intent = new Intent(MainActivity.this, SignInActivity.class);
@@ -285,13 +334,281 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+
+        tempFriends = new ArrayList<>();
+        tempChats = new ArrayList<>();
+
+        getUserChatList(); //works as intended
+        //getUsersInChat(); //works as intended
+        //GetFriends();
+
     }
 
-    private void performSearch() {
-        searchBar.clearFocus();
-        InputMethodManager in = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        in.hideSoftInputFromWindow(searchBar.getWindowToken(), 0);
-        //...perform search
+    private void performSearch() { // FIX SEARCHING
+//        searchBar.clearFocus();
+//        InputMethodManager in = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+//        in.hideSoftInputFromWindow(searchBar.getWindowToken(), 0);
+//        //...perform search
+//        DatabaseReference usersDB = FirebaseDatabase.getInstance().getReference().child("users");
+//        Query query = usersDB.orderByChild("username").startAt(searchBar.getText().toString().toUpperCase()).endAt(searchBar.getText().toString().toLowerCase() + "\uf8ff");
+//        query.addChildEventListener(new ChildEventListener() {
+//            @Override
+//            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+//                String username = "";
+//                String userID = "";
+//                String uid = dataSnapshot.getRef().getKey();
+//                if(dataSnapshot.child("username").getValue() != null){
+//                    username = dataSnapshot.child("username").getValue().toString();
+//                    userID = dataSnapshot.child("userID").getValue().toString();
+//                }
+////                if(!userID.equals(FirebaseAuth.getInstance().getCurrentUser().getUid()))
+////                {
+////                    Users obj = new Users(username, uid);
+////                    results.add(obj);
+////                    mAdapter.notifyDataSetChanged();
+////                }
+//
+//                if(!userID.equals(FirebaseAuth.getInstance().getCurrentUser().getUid()))
+//                {
+//                    Users obj = new Users(username, uid);
+//                    results.add(obj);
+//                    mAdapter.notifyDataSetChanged();
+//                }
+//
+//                System.out.println(results.size());
+//            }
+//
+//            @Override
+//            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+//
+//            }
+//
+//            @Override
+//            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+//
+//            }
+//
+//            @Override
+//            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+//
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        });
+    }
+
+    private void getUserChatList()
+    {
+        clearDB();
+        DatabaseReference mUserChatDb = FirebaseDatabase.getInstance().getReference().child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat");
+        mUserChatDb.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists())
+                {
+                    for(DataSnapshot ds : dataSnapshot.getChildren())
+                    {
+
+                        ChatObject mChat = new ChatObject(ds.getKey());
+                        results.add(mChat);
+                        getChatData(mChat.getChatId());
+                    }
+
+                    mAdapter.notifyDataSetChanged();
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+//    private void getUsersInChat()
+//    {
+//        DatabaseReference mChatDb = FirebaseDatabase.getInstance().getReference().child("chat");
+//        mChatDb.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                if(dataSnapshot.exists())
+//                {
+//
+//                    //String usersInCurrentChat = "";
+//                    tempFriends.clear();
+//                    boolean firstValue = true;
+//                    for(String childUid : tempChats)
+//                    {
+//                        String usersInCurrentChat = "";
+//                        for(DataSnapshot cs : dataSnapshot.child(childUid).child("info").child("users").getChildren())
+//                        {
+//                            if(!cs.getKey().equals(FirebaseAuth.getInstance().getCurrentUser().getUid()))
+//                            {
+//                                if(firstValue)
+//                                {
+//                                    usersInCurrentChat = usersInCurrentChat + cs.getKey();
+//                                    firstValue = false;
+//                                }
+//                                else
+//                                {
+//                                    usersInCurrentChat = usersInCurrentChat + "," + cs.getKey();
+//                                }
+//                            }
+//                        }
+//
+//                        tempFriends.add(usersInCurrentChat);
+//                        System.out.println("TEMP FRIENDS: " + usersInCurrentChat);
+//
+//                    }
+//
+//                    //completed
+//
+//                    //GetFriends();
+//
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        });
+//    }
+//
+//    private void GetFriends()
+//    {
+//        DatabaseReference friendsDb = FirebaseDatabase.getInstance().getReference().child("users");
+//        friendsDb.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                if(dataSnapshot.exists())
+//                {
+//                    if(dataSnapshot.getValue() != null)
+//                    {
+//                        clearDB();
+//                        System.out.println("LENGTH OF TEMP FRIENDS: " + tempFriends.size());
+//                        for(String currentFriends : tempFriends)
+//                        {
+//                            System.out.println("CHECK PHASE");
+//                            if(currentFriends.indexOf(",") == -1) //single user
+//                            {
+//                                System.out.println("SINGLE FRIEND CHAT");
+//                                for(DataSnapshot ds : dataSnapshot.getChildren())
+//                                {
+//                                    if(currentFriends.equals(ds.child("userID").getValue().toString()))
+//                                    {
+//                                        ChatObject mChat = new ChatObject(ds.getKey());
+//                                        results.add(mChat);
+//                                        getChatData(mChat.getChatId());
+//
+//                                        System.out.println("CHAT OBJECT: " + ds.getKey());
+//                                    }
+//                                }
+//                            }
+//
+//                        }
+//
+//                        //completed
+//
+//                        mAdapter.notifyDataSetChanged();
+//
+//
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        });
+//    }
+
+    private void getChatData(String chatId)
+    {
+
+        DatabaseReference mChatDB = FirebaseDatabase.getInstance().getReference().child("chat").child(chatId).child("info");
+        mChatDB.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists())
+                {
+                    String chatId = "";
+                    if(dataSnapshot.child("id").getValue() != null)
+                    {
+                        chatId = dataSnapshot.child("id").getValue().toString();
+                    }
+
+                    for(DataSnapshot userSnapshot : dataSnapshot.child("users").getChildren())
+                    {
+                        for(ChatObject mChat : results)
+                        {
+                            if(mChat.getChatId().equals(chatId))
+                            {
+                                Users mUser = new Users(userSnapshot.getKey());
+                                mChat.addUserToArrayList(mUser);
+                                getUserData(mUser);
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
+    private void getUserData(Users mUser)
+    {
+        DatabaseReference mUserDb = FirebaseDatabase.getInstance().getReference().child("users").child(mUser.getUid());
+        mUserDb.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Users mUser = new Users(dataSnapshot.getKey());
+
+                if(dataSnapshot.child("notificationKey").getValue() != null)
+                {
+                    mUser.setNotificationKey(dataSnapshot.child("notificationKey").getValue().toString());
+
+                    for(ChatObject mChat : results)
+                    {
+                        for(Users mUserIt : mChat.getUserObjectArrayList())
+                        {
+                            if(mUserIt.getUid().equals(mUser.getUid()))
+                            {
+                                mUserIt.setNotificationKey(mUser.getNotificationKey());
+                            }
+                        }
+                    }
+                    mAdapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void clearDB(){
+        int size = this.results.size();
+        this.results.clear();
+        mAdapter.notifyItemRangeRemoved(0, size);
+
+    }
+
+    private ArrayList<ChatObject> results = new ArrayList<>();
+    private ArrayList<ChatObject> getDataset(){
+        return results;
     }
 
 }
