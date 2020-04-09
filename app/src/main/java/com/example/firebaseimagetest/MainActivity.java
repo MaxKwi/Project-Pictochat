@@ -94,6 +94,9 @@ public class MainActivity extends AppCompatActivity {
 
     FirebaseAuth mAuth;
 
+    private ArrayList<String> tempChats;
+    private ArrayList<String> tempFriends;
+
     private GoogleSignInClient mGoogleSignInClient;
 
     private RecyclerView mRecyclerView;
@@ -332,7 +335,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        getUserChatList();
+        tempFriends = new ArrayList<>();
+        tempChats = new ArrayList<>();
+
+        getUserChatList(); //works as intended
+        //getUsersInChat(); //works as intended
+        //GetFriends();
 
     }
 
@@ -403,10 +411,14 @@ public class MainActivity extends AppCompatActivity {
                 {
                     for(DataSnapshot ds : dataSnapshot.getChildren())
                     {
+
                         ChatObject mChat = new ChatObject(ds.getKey());
                         results.add(mChat);
                         getChatData(mChat.getChatId());
                     }
+
+                    mAdapter.notifyDataSetChanged();
+
                 }
             }
 
@@ -416,6 +428,105 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+//    private void getUsersInChat()
+//    {
+//        DatabaseReference mChatDb = FirebaseDatabase.getInstance().getReference().child("chat");
+//        mChatDb.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                if(dataSnapshot.exists())
+//                {
+//
+//                    //String usersInCurrentChat = "";
+//                    tempFriends.clear();
+//                    boolean firstValue = true;
+//                    for(String childUid : tempChats)
+//                    {
+//                        String usersInCurrentChat = "";
+//                        for(DataSnapshot cs : dataSnapshot.child(childUid).child("info").child("users").getChildren())
+//                        {
+//                            if(!cs.getKey().equals(FirebaseAuth.getInstance().getCurrentUser().getUid()))
+//                            {
+//                                if(firstValue)
+//                                {
+//                                    usersInCurrentChat = usersInCurrentChat + cs.getKey();
+//                                    firstValue = false;
+//                                }
+//                                else
+//                                {
+//                                    usersInCurrentChat = usersInCurrentChat + "," + cs.getKey();
+//                                }
+//                            }
+//                        }
+//
+//                        tempFriends.add(usersInCurrentChat);
+//                        System.out.println("TEMP FRIENDS: " + usersInCurrentChat);
+//
+//                    }
+//
+//                    //completed
+//
+//                    //GetFriends();
+//
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        });
+//    }
+//
+//    private void GetFriends()
+//    {
+//        DatabaseReference friendsDb = FirebaseDatabase.getInstance().getReference().child("users");
+//        friendsDb.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                if(dataSnapshot.exists())
+//                {
+//                    if(dataSnapshot.getValue() != null)
+//                    {
+//                        clearDB();
+//                        System.out.println("LENGTH OF TEMP FRIENDS: " + tempFriends.size());
+//                        for(String currentFriends : tempFriends)
+//                        {
+//                            System.out.println("CHECK PHASE");
+//                            if(currentFriends.indexOf(",") == -1) //single user
+//                            {
+//                                System.out.println("SINGLE FRIEND CHAT");
+//                                for(DataSnapshot ds : dataSnapshot.getChildren())
+//                                {
+//                                    if(currentFriends.equals(ds.child("userID").getValue().toString()))
+//                                    {
+//                                        ChatObject mChat = new ChatObject(ds.getKey());
+//                                        results.add(mChat);
+//                                        getChatData(mChat.getChatId());
+//
+//                                        System.out.println("CHAT OBJECT: " + ds.getKey());
+//                                    }
+//                                }
+//                            }
+//
+//                        }
+//
+//                        //completed
+//
+//                        mAdapter.notifyDataSetChanged();
+//
+//
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        });
+//    }
 
     private void getChatData(String chatId)
     {
@@ -492,6 +603,7 @@ public class MainActivity extends AppCompatActivity {
         int size = this.results.size();
         this.results.clear();
         mAdapter.notifyItemRangeRemoved(0, size);
+
     }
 
     private ArrayList<ChatObject> results = new ArrayList<>();
