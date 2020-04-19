@@ -8,11 +8,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.app.DownloadManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,8 +35,11 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
+import com.stfalcon.frescoimageviewer.ImageViewer;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class SavedActivity extends AppCompatActivity implements SavedAdapter.OnItemClickListener{
@@ -122,7 +128,7 @@ public class SavedActivity extends AppCompatActivity implements SavedAdapter.OnI
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     mUploads.clear();
-
+                    mProgressCircle.setVisibility(View.INVISIBLE);
                     for (DataSnapshot postSnapshot : dataSnapshot.child("saved").getChildren()) {
                         Upload upload = postSnapshot.getValue(Upload.class);
                         upload.setKey(postSnapshot.getKey());
@@ -144,8 +150,11 @@ public class SavedActivity extends AppCompatActivity implements SavedAdapter.OnI
 
                         mAdapter.notifyDataSetChanged();
 
-                        mProgressCircle.setVisibility(View.INVISIBLE);
+
                     }
+
+
+
                 }
 
                 @Override
@@ -156,11 +165,17 @@ public class SavedActivity extends AppCompatActivity implements SavedAdapter.OnI
     }
                 @Override
     public void onItemClick(int position) {
-        Toast.makeText(this, "Normal click at position: " + position, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "Normal click at position: " + position, Toast.LENGTH_SHORT).show();
+        new ImageViewer.Builder(this, Collections.singletonList(mUploads.get(position).getImageUrl()))
+                .show();
     }
 
     @Override
     public void onSaveClick(int position) {
+        System.out.println(mUploads.get(position).getImageUrl()); //must include filepath in order to be downloaded? (name of image)
+        System.out.println(mUploads.get(position).getUid());
+        System.out.println(mUploads.get(position).getKey());
+        System.out.println(mUploads.get(position).getName());
 
     }
 

@@ -2,6 +2,7 @@ package com.example.firebaseimagetest;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -9,6 +10,7 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -35,8 +37,11 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
@@ -44,6 +49,7 @@ import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 
 import yuku.ambilwarna.AmbilWarnaDialog;
 
@@ -80,12 +86,23 @@ public class CreateActivity extends AppCompatActivity {
 
     private int drawModeInt = 0;
 
+    ArrayList<String> currentFriends;
+    ArrayList<String> currentUidFriends;
+    String[] listItems;
+    boolean[] checkedItems;
+    ArrayList<Integer> mUserItems;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create);
 
+        currentFriends  = new ArrayList<>();
+        currentUidFriends = new ArrayList<>();
+        mUserItems = new ArrayList<>();
+        getFriendItems();
+//        friendsArrayToList();
 
         //progressBar.setVisibility(View.INVISIBLE);
 
@@ -97,7 +114,77 @@ public class CreateActivity extends AppCompatActivity {
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                UploadImage();
+                //UploadImage();
+
+                friendsArrayToList();
+                mUserItems.clear();
+
+                AlertDialog.Builder mBuilder = new AlertDialog.Builder(CreateActivity.this);
+                mBuilder.setTitle("Select Where To Send");
+                mBuilder.setMultiChoiceItems(listItems, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int position, boolean isChecked)
+                    {
+
+                        if(isChecked)
+                        {
+                            if(!mUserItems.contains(position))
+                            {
+                                mUserItems.add(position);
+                            }
+                        }
+                        else if(mUserItems.contains(position))
+                        {
+                            mUserItems.remove((Integer) position);
+                        }
+
+                    }
+                }); //FEED as a first option? uploading? conversion from usernames to uids?
+                mBuilder.setCancelable(false);
+                mBuilder.setPositiveButton("Send", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int which)
+                    {
+
+                        if(mUserItems.contains(0)) //feed was selected as one of the options
+                        {
+                            UploadImage();
+                        }
+
+                        String item = "";
+                        for(int i = 0; i < mUserItems.size(); i++)
+                        {
+                            //System.out.println("indexes: " + mUserItems.get(i));
+                            item = item + listItems[mUserItems.get(i)];
+                            if(i != mUserItems.size() - 1)
+                            {
+                                item = item + ", ";
+                            }
+                        }
+                        System.out.println(item);
+                    }
+                });
+                mBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+                mBuilder.setNeutralButton("Clear All", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int which) {
+                        for(int i = 0; i < checkedItems.length; i++)
+                        {
+                            checkedItems[i] = false;
+                            mUserItems.clear();
+                        }
+                    }
+                });
+
+                AlertDialog mDialog = mBuilder.create();
+                mDialog.show();
+                //System.out.println("after");
+
             }
         });
 
@@ -217,6 +304,56 @@ public class CreateActivity extends AppCompatActivity {
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         progressBar.setVisibility(View.INVISIBLE);
 
+    }
+
+    private void getFriendItems()
+    {
+        currentFriends.clear();
+        currentUidFriends.clear();
+        currentFriends.add("Your Feed");
+        currentUidFriends.add("feed_uid_placeholder");
+//        for(String friendUid : UserInformation.friendsList)
+//        {
+//            currentUidFriends.add(friendUid);
+//            DatabaseReference userNameDb = FirebaseDatabase.getInstance().getReference().child("users").child(friendUid).child("username");
+//            userNameDb.addListenerForSingleValueEvent(new ValueEventListener() {
+//                @Override
+//                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                    String username = dataSnapshot.getValue().toString();
+//                    currentFriends.add(username);
+//                    System.out.println(username);
+//                }
+//
+//                @Override
+//                public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                }
+//            });
+//        }
+        for(ChatInfo chatUid : UserInformation.chatList)
+        {
+            currentUidFriends.add(chatUid.displayName);
+            currentFriends.add(chatUid.displayName);
+            //System.out.println("SIZE OF TEMP FRIENDS IN CHAT INFO: " + chatUid.tempUidFriendsInChat.size());
+        }
+
+        //System.out.println("first");
+
+    }
+
+    private void friendsArrayToList()
+    {
+        //System.out.println(currentFriends.size());
+        listItems = new String[currentFriends.size()];
+        for(int i = 0; i < currentFriends.size(); i++)
+        {
+            listItems[i] = currentFriends.get(i);
+            //System.out.println("item:" + listItems[i]);
+        }
+        //System.out.println("size: " + listItems.length);
+        checkedItems = new boolean[listItems.length];
+
+        //System.out.println("seconds");
     }
 
     private void openFileChooser(){

@@ -13,6 +13,7 @@ import android.os.Message;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 import com.example.firebaseimagetest.RecyclerViewMain.ChatObject;
 import com.example.firebaseimagetest.RecyclerViewMain.MediaAdapter;
@@ -29,6 +30,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.onesignal.OneSignal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,7 +43,7 @@ public class ChatActivity extends AppCompatActivity {
     private RecyclerView.Adapter mAdapter, mMediaAdapter;
     private RecyclerView.LayoutManager mLayoutManager, mMediaLayoutManager;
 
-    Button mSend, mAddMedia;
+    ImageView mSend, mAddMedia;
     EditText mMsgText;
 
     ChatObject mChatObject;
@@ -92,6 +94,8 @@ public class ChatActivity extends AppCompatActivity {
                 openGallery();
             }
         });
+
+        //OneSignal.setSubscription(false);
 
         //chatID = getIntent().getExtras().getString("chatID");
         mChatDb = FirebaseDatabase.getInstance().getReference().child("chat").child(mChatObject.getChatId()).child("messages");

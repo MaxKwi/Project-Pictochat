@@ -10,6 +10,7 @@ public class ChatObject implements Serializable
 {
 
     public String chatId;
+    public String displayName;
 
     private ArrayList<Users> userObjectArrayList = new ArrayList<>();
 

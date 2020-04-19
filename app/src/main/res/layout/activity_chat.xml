@@ -36,19 +36,19 @@
                 android:layout_weight="0.8"
                 android:hint="Message" />
 
-            <Button
+            <ImageView
                 android:id="@+id/addMedia"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.2"
-                android:text="Add Media" />
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.8"
+                app:srcCompat="@drawable/ic_attachment_black_24dp" />
 
-            <Button
+            <ImageView
                 android:id="@+id/chatSend"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.2"
-                android:text="Send" />
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.8"
+                app:srcCompat="@drawable/ic_send_black_24dp" />
 
         </LinearLayout>
 

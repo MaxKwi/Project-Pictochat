@@ -413,6 +413,7 @@ public class MainActivity extends AppCompatActivity {
                     {
 
                         ChatObject mChat = new ChatObject(ds.getKey());
+
                         results.add(mChat);
                         getChatData(mChat.getChatId());
                     }
@@ -427,6 +428,19 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+//        for(ChatInfo currentChatInfo : UserInformation.chatList)
+//        {
+//            ChatObject mChat = new ChatObject(currentChatInfo.chatId);
+//            mChat.displayName = currentChatInfo.displayName;
+//            results.add(mChat);
+//            getChatData(mChat.getChatId());
+//        }
+        System.out.println("USER INFO CHAT LIST SIZE: " + UserInformation.chatList.size());
+        System.out.println("RESULTS SIZE: " + results.size());
+
+        //mAdapter.notifyDataSetChanged();
+
     }
 
 //    private void getUsersInChat()

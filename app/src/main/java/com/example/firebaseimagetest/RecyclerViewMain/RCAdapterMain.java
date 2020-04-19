@@ -3,6 +3,7 @@ package com.example.firebaseimagetest.RecyclerViewMain;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.firebaseimagetest.ChatActivity;
 import com.example.firebaseimagetest.R;
+import com.example.firebaseimagetest.UserInformation;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -31,11 +33,13 @@ public class RCAdapterMain extends RecyclerView.Adapter<RCViewHoldersMain>{
     private String singleChatUid;
     private List<String> currentChatUsernames;
     private String singleChatUsername;
+    private List<String> finalUsernames;
     private boolean single = false;
 
     public RCAdapterMain(List<ChatObject> usersList, Context context){
         this.chatLists = usersList;
         this.context = context;
+
     }
 
     @NonNull
@@ -53,9 +57,51 @@ public class RCAdapterMain extends RecyclerView.Adapter<RCViewHoldersMain>{
         currentChatUids = new ArrayList<>();
 
         holder.mUsername.setText(chatLists.get(position).getChatId()); //run first
-
+        //holder.mUsername.setText(getUsernames(position));
         //ARRAY
 
+        //holder.mUsername.setText("yes");
+
+        System.out.println("RC ADAPTER MAIN SYSTEM OUT");
+
+
+
+        holder.mLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent(view.getContext(), ChatActivity.class);
+//                Bundle bundle = new Bundle();
+//                bundle.putString("chatID", chatLists.get(holder.getAdapterPosition()).getChatId());
+//                intent.putExtras(bundle);
+                intent.putExtra("chatObject", chatLists.get(holder.getAdapterPosition()));
+                view.getContext().startActivity(intent);
+
+//                String key = FirebaseDatabase.getInstance().getReference().child("chat").push().getKey();
+//
+//                FirebaseDatabase.getInstance().getReference("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat").child(key).setValue(true);
+//                FirebaseDatabase.getInstance().getReference("users").child(usersList.get(position).getUid()).child("chat").child(key).setValue(true);
+
+            }
+        });
+
+        //holder.mUsername.setText(UserInformation.chatList.get(position).displayName);
+
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                //Do something after 100ms
+                holder.mUsername.setText(UserInformation.chatList.get(position).displayName);
+            }
+        }, 1000);
+
+    }
+
+//    private String getUsernames(int position)
+//    {
+//
+//        single = false;
 //        final String currentChatId = chatLists.get(position).getChatId();
 //        DatabaseReference currentChatDb = FirebaseDatabase.getInstance().getReference().child("chat").child(currentChatId).child("info").child("users");
 //        currentChatDb.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -65,7 +111,7 @@ public class RCAdapterMain extends RecyclerView.Adapter<RCViewHoldersMain>{
 //                {
 //                    for(DataSnapshot ds : dataSnapshot.getChildren())
 //                    {
-//                        //System.out.println(ds.getKey());
+//                        System.out.println(ds.getKey());
 //                        if(!ds.getKey().equals(FirebaseAuth.getInstance().getCurrentUser().getUid()))
 //                        {
 //                            currentChatUids.add(ds.getKey());
@@ -76,7 +122,7 @@ public class RCAdapterMain extends RecyclerView.Adapter<RCViewHoldersMain>{
 //                    {
 //                        single = true;
 //                        singleChatUid = currentChatUids.get(0);
-//                        //System.out.println(singleChatUid);
+//                        System.out.println(singleChatUid);
 //                    }
 //
 //                    DatabaseReference currentFriendsDb = FirebaseDatabase.getInstance().getReference().child("users");
@@ -88,7 +134,7 @@ public class RCAdapterMain extends RecyclerView.Adapter<RCViewHoldersMain>{
 //                                if(single)
 //                                {
 //                                    singleChatUsername = dataSnapshot.child(singleChatUid).child("username").getValue().toString();
-//                                    //System.out.println(singleChatUsername);
+//                                    System.out.println(singleChatUsername);
 //                                }
 //                                else if(!single)
 //                                {
@@ -117,7 +163,9 @@ public class RCAdapterMain extends RecyclerView.Adapter<RCViewHoldersMain>{
 //
 //                                }
 //
-//                                holder.mUsername.setText(singleChatUsername);
+//                                //singlechatusername
+//                                System.out.println(singleChatUsername);
+//
 //
 //                            }
 //                        }
@@ -136,30 +184,10 @@ public class RCAdapterMain extends RecyclerView.Adapter<RCViewHoldersMain>{
 //
 //            }
 //        });
-
-
-
-        holder.mLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                Intent intent = new Intent(view.getContext(), ChatActivity.class);
-//                Bundle bundle = new Bundle();
-//                bundle.putString("chatID", chatLists.get(holder.getAdapterPosition()).getChatId());
-//                intent.putExtras(bundle);
-                intent.putExtra("chatObject", chatLists.get(holder.getAdapterPosition()));
-                view.getContext().startActivity(intent);
-
-//                String key = FirebaseDatabase.getInstance().getReference().child("chat").push().getKey();
 //
-//                FirebaseDatabase.getInstance().getReference("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat").child(key).setValue(true);
-//                FirebaseDatabase.getInstance().getReference("users").child(usersList.get(position).getUid()).child("chat").child(key).setValue(true);
-
-            }
-        });
-
-
-    }
+//        return singleChatUsername;
+//
+//    }
 
 
     @Override
