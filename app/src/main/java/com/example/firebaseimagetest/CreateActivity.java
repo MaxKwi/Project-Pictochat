@@ -50,6 +50,8 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import yuku.ambilwarna.AmbilWarnaDialog;
 
@@ -91,6 +93,7 @@ public class CreateActivity extends AppCompatActivity {
     String[] listItems;
     boolean[] checkedItems;
     ArrayList<Integer> mUserItems;
+    ArrayList<String> targetUidDestination;
 
 
     @Override
@@ -101,6 +104,7 @@ public class CreateActivity extends AppCompatActivity {
         currentFriends  = new ArrayList<>();
         currentUidFriends = new ArrayList<>();
         mUserItems = new ArrayList<>();
+        targetUidDestination = new ArrayList<>();
         getFriendItems();
 //        friendsArrayToList();
 
@@ -115,7 +119,7 @@ public class CreateActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //UploadImage();
-
+                targetUidDestination.clear();
                 friendsArrayToList();
                 mUserItems.clear();
 
@@ -145,13 +149,8 @@ public class CreateActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int which)
                     {
-
-                        if(mUserItems.contains(0)) //feed was selected as one of the options
-                        {
-                            UploadImage();
-                        }
-
                         String item = "";
+                        String corresUids = "";
                         for(int i = 0; i < mUserItems.size(); i++)
                         {
                             //System.out.println("indexes: " + mUserItems.get(i));
@@ -160,8 +159,24 @@ public class CreateActivity extends AppCompatActivity {
                             {
                                 item = item + ", ";
                             }
+
+                            targetUidDestination.add(currentUidFriends.get(mUserItems.get(i)));
+
                         }
                         System.out.println(item);
+                        System.out.println(targetUidDestination);
+
+                        if(mUserItems.contains(0)) //feed was selected as one of the options
+                        {
+                            System.out.println("Feed included");
+                            UploadImage();
+                        }
+                        else
+                        {
+                            System.out.println("No feed included");
+                            BeginSendingToTargets();
+                        }
+
                     }
                 });
                 mBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -332,8 +347,12 @@ public class CreateActivity extends AppCompatActivity {
 //        }
         for(ChatInfo chatUid : UserInformation.chatList)
         {
-            currentUidFriends.add(chatUid.displayName);
-            currentFriends.add(chatUid.displayName);
+            if(!currentFriends.contains(chatUid.displayName) && !currentUidFriends.contains(chatUid.chatId))
+            {
+                currentUidFriends.add(chatUid.chatId);
+                currentFriends.add(chatUid.displayName);
+            }
+
             //System.out.println("SIZE OF TEMP FRIENDS IN CHAT INFO: " + chatUid.tempUidFriendsInChat.size());
         }
 
@@ -418,7 +437,17 @@ public class CreateActivity extends AppCompatActivity {
                             String uploadId = mDatabaseRef.push().getKey();
                             mDatabaseRef.child(uploadId).setValue(upload);
 
-                            progressBar.setVisibility(View.INVISIBLE);
+                            if(targetUidDestination.size() > 0)
+                            {
+                                System.out.println("feed + extra targets");
+                                UploadImageToTargets();
+                            }
+                            else
+                            {
+                                progressBar.setVisibility(View.INVISIBLE);
+                            }
+
+
 
                         }
                     })
@@ -441,6 +470,65 @@ public class CreateActivity extends AppCompatActivity {
         else{
             Toast.makeText(this, "No file selected", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void BeginSendingToTargets()
+    {
+        paintView.buildDrawingCache();
+        Bitmap image = paintView.getmBitmap();
+        if(isStoragePermissionGranted())
+        {
+            mImageUri = getImageUri(this, image);
+            UploadImageToTargets();
+        }
+        else
+        {
+            Toast.makeText(this, "Storage Permissions are not granted, please enable them in the settings.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void UploadImageToTargets()
+    {
+        if(mImageUri != null)
+        {
+            System.out.println("SENDING TO TARGETS " + targetUidDestination.size() + ", " + targetUidDestination);
+            for(int i = 0; i < targetUidDestination.size(); i++)
+            {
+                System.out.println("CURRENT CHAT UID TARGET: " + targetUidDestination.get(i));
+                DatabaseReference mChatDb = FirebaseDatabase.getInstance().getReference().child("chat").child(targetUidDestination.get(i)).child("messages");
+                String messageId = mChatDb.push().getKey();
+                final DatabaseReference newMessageDb = mChatDb.child(messageId);
+
+                final Map newMessageMap = new HashMap<>();
+                newMessageMap.put("creator", FirebaseAuth.getInstance().getCurrentUser().getUid());
+
+                String mediaId = newMessageDb.child("media").push().getKey();
+                final StorageReference filePath = FirebaseStorage.getInstance().getReference().child("chat").child(targetUidDestination.get(i)).child(messageId).child(mediaId);
+
+                UploadTask uploadTask = filePath.putFile(mImageUri);
+                uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                newMessageMap.put("/media/" + System.currentTimeMillis() + "/", uri.toString());
+                                newMessageDb.updateChildren(newMessageMap);
+                            }
+                        });
+                    }
+                });
+
+                if(i == targetUidDestination.size() - 1)
+                {
+                    progressBar.setVisibility(View.INVISIBLE);
+                    Toast.makeText(this, "Successfully sent to " + targetUidDestination.size() + " friends", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        }
+
+
     }
 
     public Uri getImageUri(Context inContext, Bitmap inImage) {
