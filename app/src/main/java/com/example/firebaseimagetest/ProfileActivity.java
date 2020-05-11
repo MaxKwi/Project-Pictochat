@@ -136,17 +136,17 @@ public class ProfileActivity extends AppCompatActivity {
         profileIcon.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
             @Override
             public void onCreateContextMenu(ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
-                MenuItem drawPicture = contextMenu.add(Menu.NONE, 1, 1, "Draw Picture");
+                //MenuItem drawPicture = contextMenu.add(Menu.NONE, 1, 1, "Draw Picture");
                 MenuItem pickPicture = contextMenu.add(Menu.NONE, 2, 2, "Pick Picture");
                 MenuItem defaultPicture = contextMenu.add(Menu.NONE, 2, 2, "Default Picture");
 
-                drawPicture.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem menuItem) {
-
-                        return false;
-                    }
-                });
+//                drawPicture.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+//                    @Override
+//                    public boolean onMenuItemClick(MenuItem menuItem) {
+//
+//                        return false;
+//                    }
+//                });
 
                 pickPicture.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                     @Override

@@ -161,6 +161,7 @@ public class UserInformation {
 
             @Override
             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+                System.out.println("Friend child removed");
                 if (dataSnapshot.exists()){
                     String uid = dataSnapshot.getRef().getKey();
                     if(uid != null){
@@ -183,7 +184,7 @@ public class UserInformation {
 
     private void getChats() //gets all chats under current user
     {
-        chatList.clear();
+        //chatList.clear();
         DatabaseReference mUserChatDb = FirebaseDatabase.getInstance().getReference().child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat");
         mUserChatDb.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override

@@ -16,6 +16,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.firebaseimagetest.CircleTransform;
 import com.example.firebaseimagetest.R;
 import com.example.firebaseimagetest.Upload;
 import com.google.firebase.database.DataSnapshot;
@@ -56,6 +57,9 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
         usernameDB.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                System.out.println("username yes");
+
                 username = dataSnapshot.getValue().toString();
                 holder.textViewName.setText(username);
                 Picasso.with(mContext)
@@ -64,6 +68,34 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
                         .fit()
                         //.centerCrop()
                         .into(holder.imageView);
+
+                final DatabaseReference pfpDb = FirebaseDatabase.getInstance().getReference().child("users").child(uploadCurrent.getUid()).child("profileImageUrl");
+                pfpDb.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        System.out.println("getting the pfp uid");
+                        String pfpUid = dataSnapshot.getValue().toString();
+                        if(!pfpUid.equals("default"))
+                        {
+                            Picasso.with(mContext)
+                                    .load(pfpUid)
+                                    .fit()
+                                    .transform(new CircleTransform())
+                                    .into(holder.pfp);
+                        }
+                        else
+                        {
+                            holder.pfp.setImageResource(R.drawable.ic_person_black_24dp);
+                        }
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+
             }
 
             @Override
@@ -83,6 +115,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
 
         public TextView textViewName;
         public ImageView imageView;
+        public ImageView pfp;
 
         final GestureDetector gestureDetector = new GestureDetector(mContext, new GestureDetector.SimpleOnGestureListener(){
             @Override
@@ -105,6 +138,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
 
             textViewName = itemView.findViewById(R.id.text_view_name);
             imageView = itemView.findViewById(R.id.image_view_upload);
+            pfp = itemView.findViewById(R.id.pfp);
 
             itemView.setOnClickListener(this);
             itemView.setOnCreateContextMenuListener(this);

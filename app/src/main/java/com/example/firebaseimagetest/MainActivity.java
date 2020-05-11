@@ -51,6 +51,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserInfo;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -260,7 +261,7 @@ public class MainActivity extends AppCompatActivity {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                     //clearDB();
-                    //performSearch();
+                    performSearch();
                     return true;
                 }
                 return false;
@@ -345,59 +346,37 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void performSearch() { // FIX SEARCHING
-//        searchBar.clearFocus();
-//        InputMethodManager in = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-//        in.hideSoftInputFromWindow(searchBar.getWindowToken(), 0);
-//        //...perform search
-//        DatabaseReference usersDB = FirebaseDatabase.getInstance().getReference().child("users");
-//        Query query = usersDB.orderByChild("username").startAt(searchBar.getText().toString().toUpperCase()).endAt(searchBar.getText().toString().toLowerCase() + "\uf8ff");
-//        query.addChildEventListener(new ChildEventListener() {
-//            @Override
-//            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-//                String username = "";
-//                String userID = "";
-//                String uid = dataSnapshot.getRef().getKey();
-//                if(dataSnapshot.child("username").getValue() != null){
-//                    username = dataSnapshot.child("username").getValue().toString();
-//                    userID = dataSnapshot.child("userID").getValue().toString();
-//                }
-////                if(!userID.equals(FirebaseAuth.getInstance().getCurrentUser().getUid()))
-////                {
-////                    Users obj = new Users(username, uid);
-////                    results.add(obj);
-////                    mAdapter.notifyDataSetChanged();
-////                }
-//
-//                if(!userID.equals(FirebaseAuth.getInstance().getCurrentUser().getUid()))
-//                {
-//                    Users obj = new Users(username, uid);
-//                    results.add(obj);
-//                    mAdapter.notifyDataSetChanged();
-//                }
-//
-//                System.out.println(results.size());
-//            }
-//
-//            @Override
-//            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-//
-//            }
-//
-//            @Override
-//            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-//
-//            }
-//
-//            @Override
-//            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-//
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//            }
-//        });
+        searchBar.clearFocus();
+        InputMethodManager in = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        in.hideSoftInputFromWindow(searchBar.getWindowToken(), 0);
+        //...perform search
+
+        String target = searchBar.getText().toString().toLowerCase();
+
+        clearDB();
+
+        if(target.equals(""))
+        {
+            getUserChatList();
+        }
+        else
+        {
+            for(ChatInfo chatObject : UserInformation.chatList)
+            {
+                if(chatObject.currentFriendsInChat.contains(target))
+                {
+                    System.out.println("CURRENT FRIEND LIST ARRAY: " + chatObject.currentFriendsInChat);
+                    System.out.println("CHAT ID IN SEARCH: " + chatObject.chatId);
+                    ChatObject mChat = new ChatObject(chatObject.chatId);
+                    results.add(mChat);
+                    getChatData(mChat.getChatId());
+                }
+            }
+            mAdapter.notifyDataSetChanged();
+        }
+
+        System.out.println("search complete");
+
     }
 
     private void getUserChatList()

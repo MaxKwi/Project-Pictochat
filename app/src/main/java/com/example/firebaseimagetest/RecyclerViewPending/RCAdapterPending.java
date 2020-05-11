@@ -78,7 +78,10 @@ public class RCAdapterPending extends RecyclerView.Adapter<RCViewPending>{
 
     private void createChat(int position, String myUid, String otherUid)
     {
+
         String key = FirebaseDatabase.getInstance().getReference().child("chat").push().getKey();
+
+        System.out.println("CHAT VALUES: " + position + ", " + myUid + ", " + otherUid);
 
         HashMap newChatMap = new HashMap();
         newChatMap.put("id", key);
@@ -87,8 +90,9 @@ public class RCAdapterPending extends RecyclerView.Adapter<RCViewPending>{
 
         DatabaseReference chatInfoDb = FirebaseDatabase.getInstance().getReference().child("chat").child(key).child("info");
         chatInfoDb.updateChildren(newChatMap);
-
+        System.out.println("Initialized chat map");
         InitializeChatID(myUid, otherUid, key);
+        System.out.println("initialized user chats");
 
     }
 

@@ -58,11 +58,13 @@ public class RCAdapter extends RecyclerView.Adapter<RCViewHolders>{
                 final String otherUserID = usersList.get(holder.getLayoutPosition()).getUid();
                 if(UserInformation.pendingList.contains(otherUserID))
                 {
+                    //System.out.println("FRIEND SWITCH 1");
                     holder.mAdd.setText("Add");
                     FirebaseDatabase.getInstance().getReference().child("users").child(userID).child("pending").child(otherUserID).removeValue();
                     FirebaseDatabase.getInstance().getReference().child("users").child(otherUserID).child("incoming").child(userID).removeValue();
                 }
                 else if(!UserInformation.friendsList.contains(otherUserID)){
+                    //System.out.println("FRIEND SWITCH 2");
                     holder.mAdd.setText("Remove");
                     FirebaseDatabase.getInstance().getReference().child("users").child(userID).child("pending").child(otherUserID).setValue(true);
                     FirebaseDatabase.getInstance().getReference().child("users").child(otherUserID).child("incoming").child(userID).setValue(true);
@@ -75,6 +77,7 @@ public class RCAdapter extends RecyclerView.Adapter<RCViewHolders>{
                 }
                 else if(UserInformation.friendsList.contains(otherUserID))
                 {
+                    //System.out.println("FRIEND SWITCH 3");
                     holder.mAdd.setText("Add");
                     FirebaseDatabase.getInstance().getReference().child("users").child(userID).child("friends").child(otherUserID).removeValue();
                     FirebaseDatabase.getInstance().getReference().child("users").child(otherUserID).child("friends").child(userID).removeValue();
@@ -83,6 +86,7 @@ public class RCAdapter extends RecyclerView.Adapter<RCViewHolders>{
 
                 }
                 else{
+                    //System.out.println("FRIEND SWITCH 4");
                     holder.mAdd.setText("Add");
 
 
@@ -95,8 +99,32 @@ public class RCAdapter extends RecyclerView.Adapter<RCViewHolders>{
 
     private void RemoveChatChild(final String otherUID)
     {
+        System.out.println("REMOVING CHAT CHILD ");
         DatabaseReference chatIDDB = FirebaseDatabase.getInstance().getReference().child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat");
-        chatIDDB.addValueEventListener(new ValueEventListener() {
+//        chatIDDB.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                for(DataSnapshot ds : dataSnapshot.getChildren())
+//                {
+//                    String linkedUID = ds.getValue().toString();
+//                    String linkedPath = ds.getKey();
+//                    if(linkedUID.equals(otherUID))
+//                    {
+//                        FirebaseDatabase.getInstance().getReference().child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat").child(linkedPath).removeValue();
+//                        FirebaseDatabase.getInstance().getReference().child("users").child(otherUID).child("chat").child(linkedPath).removeValue();
+//                        FirebaseDatabase.getInstance().getReference().child("chat").child(linkedPath).removeValue();
+//                        System.out.println("CHAT CHILD REMOVED");
+//                        break;
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        });
+        chatIDDB.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for(DataSnapshot ds : dataSnapshot.getChildren())
@@ -108,6 +136,7 @@ public class RCAdapter extends RecyclerView.Adapter<RCViewHolders>{
                         FirebaseDatabase.getInstance().getReference().child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat").child(linkedPath).removeValue();
                         FirebaseDatabase.getInstance().getReference().child("users").child(otherUID).child("chat").child(linkedPath).removeValue();
                         FirebaseDatabase.getInstance().getReference().child("chat").child(linkedPath).removeValue();
+                        System.out.println("CHAT CHILD REMOVED");
                         break;
                     }
                 }
