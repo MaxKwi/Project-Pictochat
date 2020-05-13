@@ -18,7 +18,7 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.example.firebaseimagetest.ImageAdapter;
+import com.example.firebaseimagetest.RecyclerViewImages.ImageAdapter;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;

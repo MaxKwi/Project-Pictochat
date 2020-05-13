@@ -16,12 +16,12 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
-public class SavedAdapter extends RecyclerView.Adapter<SavedAdapter.ViewHolder>{
+public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHolder>{
     private Context mContext;
     private List<Upload> mUploads;
-    private SavedAdapter.OnItemClickListener mListener;
+    private ProfileAdapter.OnItemClickListener mListener;
 
-    public SavedAdapter(Context context, List<Upload> uploads)
+    public ProfileAdapter(Context context, List<Upload> uploads)
     {
         mContext = context;
         mUploads = uploads;
@@ -29,13 +29,13 @@ public class SavedAdapter extends RecyclerView.Adapter<SavedAdapter.ViewHolder>{
 
     @NonNull
     @Override
-    public SavedAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ProfileAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(mContext).inflate(R.layout.recyclerview_grid_item, parent, false);
-        return new SavedAdapter.ViewHolder(v);
+        return new ProfileAdapter.ViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull SavedAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ProfileAdapter.ViewHolder holder, int position) {
         final Upload uploadCurrent = mUploads.get(position);
         Picasso.with(mContext)
                 .load(uploadCurrent.getImageUrl())
@@ -101,7 +101,7 @@ public class SavedAdapter extends RecyclerView.Adapter<SavedAdapter.ViewHolder>{
         public void onCreateContextMenu(ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
             //contextMenu.setHeaderTitle("Select Action");
 //            MenuItem doWhatever = contextMenu.add(Menu.NONE, 1, 1, "Save to device");
-            MenuItem delete = contextMenu.add(Menu.NONE, 2, 2, "Remove from saved");
+            MenuItem delete = contextMenu.add(Menu.NONE, 2, 2, "Delete post");
 
 //            doWhatever.setOnMenuItemClickListener(this);
             delete.setOnMenuItemClickListener(this);
@@ -118,7 +118,7 @@ public class SavedAdapter extends RecyclerView.Adapter<SavedAdapter.ViewHolder>{
 
     }
 
-    public void setOnItemClickListener(SavedAdapter.OnItemClickListener listener){
+    public void setOnItemClickListener(ProfileAdapter.OnItemClickListener listener){
         mListener = listener;
     }
 }
