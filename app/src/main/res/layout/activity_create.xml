@@ -80,6 +80,24 @@
         app:srcCompat="@drawable/paint_bucket_icon" />
 
     <ImageView
+        android:id="@+id/undo"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/bgcolor"
+        android:layout_marginTop="48dp"
+        app:srcCompat="@drawable/ic_undo_black_24dp" />
+
+    <ImageView
+        android:id="@+id/redo"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/undo"
+        android:layout_marginBottom="8dp"
+        app:srcCompat="@drawable/ic_redo_black_24dp" />
+
+    <ImageView
         android:id="@+id/savebutton"
         android:layout_width="48dp"
         android:layout_height="48dp"

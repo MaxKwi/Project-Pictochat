@@ -2,6 +2,7 @@ package com.example.firebaseimagetest;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -9,6 +10,7 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -25,9 +27,13 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.MimeTypeMap;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -43,7 +49,10 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
 
+import org.w3c.dom.Text;
+
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 
 import yuku.ambilwarna.AmbilWarnaDialog;
 
@@ -56,8 +65,11 @@ public class CreateActivity extends AppCompatActivity {
     int mDefaultColor;
     int mCurrentColor;
     int newColor;
+    boolean backgroundColor;
+    int savedProgress = 20;
+    int savedItem = 0;
 
-    private ImageView sendButton, drawMode, drawColor, eraser, bgcolor, savebutton, clear;
+    private ImageView sendButton, drawMode, drawColor, eraser, bgcolor, savebutton, clear, undo, redo;
 
     private ProgressBar progressBar;
 
@@ -78,7 +90,7 @@ public class CreateActivity extends AppCompatActivity {
 
     private StorageTask mUploadTask;
 
-    private int drawModeInt = 0;
+    private int drawModeInt = 1;
 
 
     @Override
@@ -106,25 +118,7 @@ public class CreateActivity extends AppCompatActivity {
         drawMode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                drawModeInt++;
-
-                if(drawModeInt == 3)
-                {
-                    paintView.blur();
-                    drawModeInt = 0;
-                    Toast.makeText(CreateActivity.this, "Draw Mode: Blur", Toast.LENGTH_SHORT).show();
-                }
-                else if(drawModeInt == 2)
-                {
-                    paintView.emboss();
-                    Toast.makeText(CreateActivity.this, "Draw Mode: Emboss", Toast.LENGTH_SHORT).show();
-                }
-                else if(drawModeInt == 1)
-                {
-                    paintView.normal();
-                    Toast.makeText(CreateActivity.this, "Draw Mode: Normal", Toast.LENGTH_SHORT).show();
-                }
-
+                StrokeAlertDialog();
             }
         });
 
@@ -134,7 +128,6 @@ public class CreateActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 CallColorPicker();
-                paintView.changeColor(newColor);
             }
         });
 
@@ -152,8 +145,26 @@ public class CreateActivity extends AppCompatActivity {
         bgcolor.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                backgroundColor=true;
                 CallColorPicker();
-                paintView.changeBGColor(newColor);
+            }
+        });
+
+        undo = (ImageView) findViewById(R.id.undo);
+
+        undo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                paintView.undo();
+            }
+        });
+
+        redo = (ImageView) findViewById(R.id.redo);
+
+        redo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                paintView.redo();
             }
         });
 
@@ -162,7 +173,7 @@ public class CreateActivity extends AppCompatActivity {
         clear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                paintView.clear();
+                DeleteDialogMethod();
             }
         });
 
@@ -217,6 +228,122 @@ public class CreateActivity extends AppCompatActivity {
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         progressBar.setVisibility(View.INVISIBLE);
 
+    }
+
+    private void DeleteDialogMethod(){
+        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+        alertDialog.setTitle("Clear canvas?");
+//        alertDialog.setMessage("Message");
+        alertDialog.setCancelable(false);
+
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Yes",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        paintView.clear();
+                        dialog.dismiss();
+                    }
+                });
+
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "No",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        alertDialog.show();
+
+        Button btnPositive = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        Button btnNegative = alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+
+        LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) btnPositive.getLayoutParams();
+        layoutParams.weight = 10;
+        btnPositive.setLayoutParams(layoutParams);
+        btnNegative.setLayoutParams(layoutParams);
+    }
+
+    private void StrokeAlertDialog(){
+        final AlertDialog.Builder popDialog = new AlertDialog.Builder(this);
+        popDialog.setCancelable(false);
+        final SeekBar seek = new SeekBar(this);
+        seek.setMax(100);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            seek.setMin(1);
+        }
+        seek.setProgress(savedProgress);
+        seek.setKeyProgressIncrement(1);
+
+        popDialog.setTitle("Change style and size");
+        popDialog.setView(seek);
+
+        final TextView textView = new TextView(this);
+
+        seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser){
+                int val = (progress * ((seekBar.getWidth()+150) - 10 * seekBar.getThumbOffset())) / seekBar.getMax();
+                textView.setText("" + progress);
+                textView.setX(seekBar.getX() + val + seekBar.getThumbOffset() / 2);
+                savedProgress = progress;
+                paintView.changeSize(progress);
+            }
+
+            public void onStartTrackingTouch(SeekBar arg0) {
+                //do something
+
+                // TODO Auto-generated method stub
+            }
+
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                //do something
+
+            }
+        });
+
+        LinearLayout linearLayout = new LinearLayout(this);
+        linearLayout.addView(seek);
+        linearLayout.addView(textView);
+        popDialog.setView(linearLayout);
+        linearLayout.setOrientation(LinearLayout.VERTICAL);
+
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams sb = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+        lp.setMargins(0, 20, 0, 0);
+        seek.setLayoutParams(sb);
+        linearLayout.setPadding(0,60,0,0);
+        seek.setPadding(60, 0, 60, 0);
+        linearLayout.setLayoutParams(lp);
+
+        String[] items = {"Normal","Emboss","Blur"};
+        final int checkedItem = savedItem;
+        popDialog.setSingleChoiceItems(items, checkedItem, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        savedItem=0;
+                        paintView.normal();
+                        break;
+                    case 1:
+                        savedItem=1;
+                        paintView.emboss();
+                        break;
+                    case 2:
+                        savedItem=2;
+                        paintView.blur();
+                        break;
+                }
+            }
+        });
+
+        // Button OK
+        popDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        popDialog.create();
+        popDialog.show();
     }
 
     private void openFileChooser(){
@@ -370,17 +497,25 @@ public class CreateActivity extends AppCompatActivity {
         AmbilWarnaDialog dialog = new AmbilWarnaDialog(this, mCurrentColor, new AmbilWarnaDialog.OnAmbilWarnaListener() {
             @Override
             public void onCancel(AmbilWarnaDialog dialog) {
-
+                backgroundColor=false;
             }
 
             @Override
             public void onOk(AmbilWarnaDialog dialog, int color) {
                 newColor = color;
                 mCurrentColor = newColor;
+                if(backgroundColor){
+                    paintView.changeBGColor(newColor);
+                }
+                else{
+                    paintView.changeColor(newColor);
+                }
+                backgroundColor=false;
             }
         });
 
         dialog.show();
 
     }
+
 }

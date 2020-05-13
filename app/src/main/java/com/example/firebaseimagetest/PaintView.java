@@ -19,7 +19,7 @@ import java.util.ArrayList;
 
 public class PaintView extends View {
 
-    public static int BRUSH_SIZE = 20;
+    private int BRUSH_SIZE = 20;
     public static final int DEFAULT_COLOR = Color.RED;
     public static final int DEFAULT_BG_COLOR = Color.WHITE;
     private static final float TOUCH_TOLERANCE = 4;
@@ -27,6 +27,7 @@ public class PaintView extends View {
     private Path mPath;
     private Paint mPaint;
     private ArrayList<FingerPath> paths = new ArrayList<>();
+    private ArrayList<FingerPath> redoPaths = new ArrayList<>();
     private int currentColor;
     private int backgroundColor = DEFAULT_BG_COLOR;
     private int strokeWidth;
@@ -91,9 +92,38 @@ public class PaintView extends View {
         invalidate();
     }
 
+    public void undo() {
+        if(!paths.isEmpty()){
+            redoPaths.add(paths.remove(paths.size()-1));
+            invalidate();
+        }
+    }
+
+    public void redo() {
+        if(!redoPaths.isEmpty()){
+            paths.add(redoPaths.remove(redoPaths.size()-1));
+            invalidate();
+        }
+    }
+
     public void changeEraser() { currentColor = backgroundColor; }
 
-    public void changeBGColor(int newColor) {backgroundColor = newColor; }
+    public void changeBGColor(int newColor) {
+        backgroundColor = newColor;
+        mCanvas.drawColor(backgroundColor);
+        for (FingerPath fp : paths) {
+            mPaint.setColor(fp.color);
+            mPaint.setStrokeWidth(fp.strokeWidth);
+            mPaint.setMaskFilter(null);
+
+            if (fp.emboss)
+                mPaint.setMaskFilter(mEmboss);
+            else if (fp.blur)
+                mPaint.setMaskFilter(mBlur);
+
+            mCanvas.drawPath(fp.path, mPaint);
+        }
+    }
 
     public void changeColor(int newColor)
     {
@@ -103,6 +133,11 @@ public class PaintView extends View {
     public Bitmap getmBitmap()
     {
         return mBitmap;
+    }
+
+    public void changeSize(int size){
+        BRUSH_SIZE = size;
+        strokeWidth = BRUSH_SIZE;
     }
 
     @Override
@@ -158,6 +193,8 @@ public class PaintView extends View {
     public boolean onTouchEvent(MotionEvent event) {
         float x = event.getX();
         float y = event.getY();
+
+        redoPaths.clear();
 
         switch(event.getAction()) {
             case MotionEvent.ACTION_DOWN :

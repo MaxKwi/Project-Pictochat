@@ -8,11 +8,17 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,8 +39,14 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class SavedActivity extends AppCompatActivity implements SavedAdapter.OnItemClickListener{
 
@@ -97,7 +109,7 @@ public class SavedActivity extends AppCompatActivity implements SavedAdapter.OnI
         mRecyclerView.setLayoutManager(new GridLayoutManager(this, columns));
 
         mUploads = new ArrayList<>();
-        //
+
         mAdapter = new SavedAdapter(SavedActivity.this, mUploads);
 
         mRecyclerView.setAdapter(mAdapter);
@@ -105,7 +117,7 @@ public class SavedActivity extends AppCompatActivity implements SavedAdapter.OnI
         mAdapter.setOnItemClickListener(SavedActivity.this);
 
         mRecyclerView.setAdapter(mAdapter);
-        //
+
 
         mAuth = FirebaseAuth.getInstance();
         tempUser = mAuth.getCurrentUser();
@@ -156,17 +168,95 @@ public class SavedActivity extends AppCompatActivity implements SavedAdapter.OnI
     }
                 @Override
     public void onItemClick(int position) {
-        Toast.makeText(this, "Normal click at position: " + position, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "Normal click at position: " + position, Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onSaveClick(int position) {
+        //Doesn't work, please fix saving selected image to device
+        final Upload selectedItem = mUploads.get(position);
+        final String selectedKey = selectedItem.getKey();
+        String url = selectedItem.getImageUrl();
+        StorageReference imageRef = mStorage.getReferenceFromUrl(selectedItem.getImageUrl());
+        final Uri img = Uri.parse(Uri.decode(url));
 
+//        Bitmap currentImage = getContactBitmapFromURI(SavedActivity.this, img);
+        Bitmap currentImage = null;
+        try {
+            currentImage = MediaStore.Images.Media.getBitmap(this.getContentResolver(), img);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println(url);
+        System.out.println(img);
+        saveImage(currentImage);
+        Toast.makeText(this, "Saved to device", Toast.LENGTH_SHORT).show();
+
+    }
+
+    public Bitmap getContactBitmapFromURI(Context context, Uri uri) {
+        try {
+
+            InputStream input = context.getContentResolver().openInputStream(uri);
+            if (input == null) {
+                return null;
+            }
+            return BitmapFactory.decodeStream(input);
+        }
+        catch (FileNotFoundException e)
+        {
+
+        }
+        return null;
+    }
+
+    private void saveImage(Bitmap finalBitmap) {
+
+        String root = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES).toString();
+        File myDir = new File(root + "/saved_images");
+        myDir.mkdirs();
+        Random generator = new Random();
+
+        int n = 10000;
+        n = generator.nextInt(n);
+        String fname = "Image-"+ n +".jpg";
+        File file = new File (myDir, fname);
+        if (file.exists ()) file.delete ();
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            finalBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+             sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED,
+                 Uri.parse("file://"+ Environment.getExternalStorageDirectory())));
+            out.flush();
+            out.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+// Tell the media scanner about the new file so that it is
+// immediately available to the user.
+        MediaScannerConnection.scanFile(this, new String[]{file.toString()}, null,
+                new MediaScannerConnection.OnScanCompletedListener() {
+                    public void onScanCompleted(String path, Uri uri) {
+                        Log.i("ExternalStorage", "Scanned " + path + ":");
+                        Log.i("ExternalStorage", "-> uri=" + uri);
+                    }
+                });
     }
 
     @Override
     public void onDeleteClick(int position) {
+        userSB = FirebaseStorage.getInstance().getReference().child("saved").child(tempUser.getUid());
+        final Upload selectedItem = mUploads.get(position);
+        final String selectedKey = selectedItem.getKey();
+        StorageReference imageRef = mStorage.getReferenceFromUrl(selectedItem.getImageUrl());
+        final String userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        deleteImageInfo(userID, selectedKey);
+    }
 
+    private void deleteImageInfo(String userID, String selectedKey){
+        FirebaseDatabase.getInstance().getReference().child("users").child(userID).child("saved").child(selectedKey).removeValue();
     }
 
     @Override

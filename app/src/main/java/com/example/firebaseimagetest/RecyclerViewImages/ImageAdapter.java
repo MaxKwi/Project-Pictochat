@@ -1,4 +1,4 @@
-package com.example.firebaseimagetest;
+package com.example.firebaseimagetest.RecyclerViewImages;
 
 import android.content.Context;
 import android.util.Log;
@@ -133,10 +133,10 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
         public void onCreateContextMenu(ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
             //contextMenu.setHeaderTitle("Select Action");
             MenuItem doWhatever = contextMenu.add(Menu.NONE, 1, 1, "Save");
-            MenuItem delete = contextMenu.add(Menu.NONE, 2, 2, "Delete");
+//            MenuItem delete = contextMenu.add(Menu.NONE, 2, 2, "Delete");
 
             doWhatever.setOnMenuItemClickListener(this);
-            delete.setOnMenuItemClickListener(this);
+//            delete.setOnMenuItemClickListener(this);
         }
 
         @Override
